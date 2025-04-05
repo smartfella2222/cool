@@ -1,1 +1,1511 @@
 
+--army's admin
+--@armh2
+
+--[[
+ServiceFetch
+]]
+local TextService = game:GetService('TextService')
+local TweenService = game:GetService('TweenService')
+local HTTPService = game:GetService('HttpService')
+local UserInputService = game:GetService('UserInputService')
+local CoreGui = game:GetService('CoreGui')
+local StarterGui = game:GetService('StarterGui')
+local VRService = game:GetService('VRService')
+
+
+--[[
+Variables
+]]
+local prefix = Enum.KeyCode.Minus
+
+local cmdbardefaultpos = UDim2.new(0.5, -125,1, 0)
+local cmdbarshowpos = cmdbardefaultpos - UDim2.fromOffset(0,125)
+local cmdbarhidepos = cmdbardefaultpos + UDim2.fromOffset(0,50)
+local cmdtabinprogress = false
+local cmdbarbackgroundcolor = Color3.fromRGB(28,28,28)
+local player = game.Players.LocalPlayer
+local flying = true
+local characterrig = nil
+
+local MainContainer = Instance.new("ScreenGui")
+MainContainer.Parent = CoreGui
+MainContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local warnings = Instance.new("Folder", MainContainer)
+warnings.Name = "Warnings"
+--[[
+Some Essential Functions
+]]
+function randomizename(asset)
+	while task.wait(1) do
+		asset.Name = HTTPService:GenerateGUID(false)
+	end
+end
+function collisionfix(par)
+	if par then
+		for i,v in pairs(par:GetDescendants()) do
+			if v:IsA('BasePart') then
+				v.CanCollide = false
+			end
+		end
+	end
+end
+
+function buildrig(cf, trans)
+	local holder = Instance.new('Model', workspace.CurrentCamera)
+	holder.Name = "Rig_"
+	local limbfoundation = {
+		['Head'] = {
+			['Offset'] = CFrame.new(0,2,0) * CFrame.Angles(0,math.rad(90),0),
+			['Size'] = Vector3.new(2,1,1),
+			['Name'] = 'Head'
+		},
+		['Torso'] = {
+			['Offset'] = CFrame.new(0,0.5,0) * CFrame.Angles(0,math.rad(90),0),
+			['Size'] = Vector3.new(2,2,1),
+			['Name'] = 'Torso'
+		},
+		['HRP'] = {
+			['Offset'] = CFrame.new(0,0.5,0) * CFrame.Angles(0,math.rad(90),0),
+			['Size'] = Vector3.new(2,2,1),
+			['Name'] = 'HumanoidRootPart'
+		},
+		['RightArm'] = {
+			['Offset'] = CFrame.new(0,0.5,1.5),
+			['Size'] = Vector3.new(1, 2, 1),
+			['Name'] = 'Right Arm'
+		},
+		['LeftArm'] = {
+			['Offset'] = CFrame.new(0,0.5,-1.5),
+			['Size'] = Vector3.new(1, 2, 1),
+			['Name'] = 'Left Arm'
+		},
+		['RightLeg'] = {
+			['Offset'] = CFrame.new(0,-1.5,0.5),
+			['Size'] = Vector3.new(1, 2, 1),
+			['Name'] = 'Right Leg'
+		},
+		['LeftLeg'] = {
+			['Offset'] = CFrame.new(0,-1.5,-0.5),
+			['Size'] = Vector3.new(1, 2, 1),
+			['Name'] = 'Left Leg'
+		},
+	}
+
+	local m6dfoundation = {
+		['LeftHip'] = {
+			['C0'] = CFrame.new(-1, -1, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0),
+			['C1'] = CFrame.new(-0.5, 1, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0),
+			['Name'] = "Left Hip",
+			['Part0'] = "Torso",
+			['Part1'] = "Left Leg"
+		},
+		['LeftShoulder'] = {
+			['C0'] = CFrame.new(-1, 0.5, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0),
+			['C1'] = CFrame.new(0.5, 0.5, 0, -0, -0, -1, 0, 1, 0, 1, 0, 0),
+			['Name'] = "Left Shoulder",
+			['Part0'] = "Torso",
+			['Part1'] = "Left Arm"
+		},
+		['RightShoulder'] = {
+			['C0'] = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0),
+			['C1'] = CFrame.new(-0.5, 0.5, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0),
+			['Name'] = "Right Shoulder",
+			['Part0'] = "Torso",
+			['Part1'] = "Right Arm"
+		},
+		['RightHip'] = {
+			['C0'] = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0),
+			['C1'] = CFrame.new(0.5, 1, 0, 0, 0, 1, 0, 1, 0, -1, -0, -0),
+			['Name'] = "Right Hip",
+			['Part0'] = "Torso",
+			['Part1'] = "Right Leg"
+		},
+		['Neck'] = {
+			['C0'] = CFrame.new(0, 1, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0),
+			['C1'] = CFrame.new(0, -0.5, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0),
+			['Name'] = "Neck",
+			['Part0'] = "Torso",
+			['Part1'] = "Head"
+		},
+		['RootJoint'] = {
+			['C0'] = CFrame.new(0, 0, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0),
+			['C1'] = CFrame.new(0, 0, 0, -1, -0, -0, 0, 0, 1, 0, 1, 0),
+			['Name'] = "RootJoint",
+			['Part0'] = "HumanoidRootPart",
+			['Part1'] = "Torso"
+		},
+	}
+
+	for i,v in pairs(limbfoundation) do
+		local part = Instance.new('Part', holder)
+		part.Transparency = trans or 1
+		part.Anchored = false
+		coroutine.wrap(function()
+			while task.wait() do
+				if part ~= nil and part.Parent ~= nil then
+					part.CanCollide = false
+				end
+			end
+		end)()
+		part.Size = v['Size']
+		part.CFrame = cf * v['Offset']
+		part.Name = v['Name']
+	end
+	for i,v in pairs(m6dfoundation) do
+		local m6d = Instance.new('Motor6D', holder:WaitForChild('Torso'))
+		m6d.C0 = v['C0']
+		m6d.C1 = v['C1']
+		m6d.Name = v['Name']
+		m6d.Part0 = holder:FindFirstChild(v['Part0'])
+		m6d.Part1 = holder:FindFirstChild(v['Part1'])
+	end
+
+	local humanoid = Instance.new('Humanoid', holder)
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	game:GetService('RunService').Heartbeat:Connect(function()
+		collisionfix(holder) 
+	end)
+	if characterrig ~= nil then
+		characterrig:Destroy()
+		characterrig = holder
+	end
+	return holder
+end
+task.spawn(randomizename, MainContainer)
+
+--[[
+Commands
+]]
+local cmds = {}
+
+--
+
+function fly(speed)
+	local char = player.Character
+	flying = true
+
+	local hrp = char:WaitForChild('HumanoidRootPart')
+	local hum = char:WaitForChild('Humanoid')
+
+	if tonumber(speed) == nil then
+		speed = 15
+	end
+
+	local bodypos = Instance.new('BodyPosition', hrp)
+	bodypos.D = 770
+	bodypos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	bodypos.P = 10000
+	bodypos.Position = hrp.Position
+
+	local bodygyro = Instance.new('BodyGyro', hrp)
+	bodygyro.D = 50
+	bodygyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+	bodygyro.P = 200
+
+	local hummd = hum.MoveDirection
+	local cam = workspace.CurrentCamera
+
+	local directionals = {
+		['X'] = 0,
+		['Y'] = 0,
+		['Z'] = 0
+	}
+
+	hum:GetPropertyChangedSignal('MoveDirection'):Connect(function()
+		local rv = hum.MoveDirection:Dot(cam.CFrame.RightVector)
+		local lv = hum.MoveDirection:Dot(cam.CFrame.LookVector)
+		if (rv > 0.25) then
+			directionals['X'] = 1
+		elseif (rv < -0.25) then
+			directionals['X'] = -1
+		elseif (rv > -0.25 and rv < 0.25) then
+			directionals['X'] = 0
+		end
+		if (lv > 0.25) then
+			directionals['Z'] = -1
+		elseif (lv < -0.25) then
+			directionals['Z'] = 1
+		elseif (lv > -0.25 and lv < 0.25) then
+			directionals['Z'] = 0
+		end
+	end)
+
+	while task.wait() do
+		if flying == true then
+			local s,f = pcall(function()
+				hum.PlatformStand = true
+				bodygyro.CFrame = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesYXZ(workspace.CurrentCamera.CFrame:ToEulerAnglesYXZ()) * CFrame.Angles(math.rad(directionals['Z']*speed),0,math.rad(-directionals['X']*speed/1.25))
+				bodypos.Position = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesYXZ(workspace.CurrentCamera.CFrame:ToEulerAnglesYXZ()) * CFrame.new(
+					directionals['X']*speed,    
+					directionals['Y']*speed,
+					directionals['Z']*speed  
+				).Position
+			end)
+			if f then
+				break
+			end
+		else
+			hum.PlatformStand = false
+			bodygyro:Destroy()
+			bodypos:Destroy()
+			break
+		end
+	end
+end
+cmds[fly] = {
+	['Name'] = "fly",
+	['CommandStyle'] = 2,
+	['Args'] = {
+		'speed'
+	},
+	['Description'] = 'Makes you fly. You can change the speed via the "speed" argument.',
+	['Command'] = fly
+}
+
+--
+
+function destroy()
+	MainContainer:Destroy()
+end
+cmds[destroy] = {
+	['Name'] = "killscript",
+	['CommandStyle'] = 3,
+	['Description'] = 'Removes this admin script from your client.',
+	['Args'] = {
+	},
+	['Command'] = destroy
+}
+
+--
+
+function unfly()
+	flying = false
+end
+cmds[unfly] = {
+	['Name'] = "unfly",
+	['CommandStyle'] = 3,
+	['Description'] = "If you're flying, this will stop it.",
+	['Args'] = {
+	},
+	['Command'] = unfly
+}
+
+--
+
+function offsetui(amount)
+	cmdbarshowpos = cmdbardefaultpos - UDim2.fromOffset(-amount,125)
+	cmdbarhidepos = cmdbardefaultpos + UDim2.fromOffset(amount,50)
+end
+cmds[offsetui] = {
+	['Name'] = "offsetbar",
+	['CommandStyle'] = 1,
+	['Description'] = 'Allows you to add to the x axis "offset" of the command bar; "Int" is the number in pixels for the offsetting.',
+	['Args'] = {
+		'int'
+	},
+	['Command'] = offsetui
+}
+
+--
+
+function execute(inpscript)
+	loadstring(inpscript)()
+end
+cmds[execute] = {
+	['Name'] = "execute",
+	['CommandStyle'] = 2,
+	['Description'] = 'Executes a LuaU script as the argument via loadstring - (Only use this for short scripts).',
+	['Args'] = {
+		'script'
+	},
+	['Command'] = execute
+}
+
+--
+
+function devconsole()
+	StarterGui:SetCore("DevConsoleVisible", true)
+end
+cmds[devconsole] = {
+	['Name'] = "devconsole",
+	['CommandStyle'] = 1,
+	['Description'] = 'Shows the developer console, also accessible via the keyboard shortcut "F9" or typing "/console" in chat.',
+	['Args'] = {
+	},
+	['Command'] = devconsole
+}
+
+
+--
+
+function commands()
+	createcmdsui()
+end
+cmds[commands] = {
+	['Name'] = "commands",
+	['CommandStyle'] = 1,
+	['Description'] = "Shows a prompt of all available commands, (this prompt)",
+	['Args'] = {
+	},
+	['Command'] = commands
+}
+
+--
+
+function reangle()
+	local cord = CFrame.new()
+	if player.Character ~= nil and player.Character:FindFirstChild('HumanoidRootPart') then
+		if characterrig == nil then
+			cord = player.Character.HumanoidRootPart.CFrame
+		else
+			return
+		end
+	else
+		return
+	end
+	local rig = buildrig(cord)
+
+	game.Players.LocalPlayer.Character:BreakJoints()
+	if game.Players.LocalPlayer.Character:FindFirstChild('Humanoid') then
+		game.Players.LocalPlayer.Character.Humanoid.Health = 0
+	end
+	game.Players.LocalPlayer.Character = nil
+	repeat task.wait() until game.Players.LocalPlayer.Character ~= nil
+	local function checkd(d)
+		if d:IsA('Animator') then
+			d:Destroy()
+		elseif d:IsA('LocalScript') then
+			d.Enabled = false
+		end
+	end
+	for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+		checkd(v)
+	end
+	game.Players.LocalPlayer.Character.DescendantAdded:Connect(function(d)
+		checkd(d)
+	end)
+
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character
+	local hrp = char:WaitForChild('HumanoidRootPart')
+
+	if characterrig ~= nil then
+		characterrig:Destroy()
+	end
+	characterrig = char
+	plr.Character = rig
+	if char:FindFirstChild('Animate') then char.Animate:Destroy() end
+	char:WaitForChild('Humanoid').Died:Connect(function()
+		rig:Destroy()
+		characterrig = nil
+	end)
+	rig:WaitForChild('Humanoid').Died:Connect(function()
+		char:BreakJoints()
+		char:WaitForChild('Humanoid').Health = 0
+		characterrig = nil
+	end)
+	wait()
+	local hum = char:WaitForChild('Humanoid')
+	for i,v in pairs(hum:GetPlayingAnimationTracks()) do
+		v:Stop()
+	end
+	local function sync()
+		local s, f = pcall(function()
+			hrp.CFrame = rig:FindFirstChild('Torso').CFrame
+			for i,v in pairs(rig:GetDescendants()) do
+				if v:IsA('Motor6D') and char:FindFirstChild(v.Name, true) then
+					char:FindFirstChild(v.Name, true).CurrentAngle = v.CurrentAngle
+				end
+			end
+		end)
+		if f then
+			return
+		end
+	end
+
+	game:GetService('RunService').Heartbeat:Connect(function()
+		collisionfix(char) 
+		sync()
+	end)
+end
+cmds[reangle] = {
+	['Name'] = "angleanim",
+	['CommandStyle'] = 2,
+	['Description'] = "Removes your Humanoid's Animator and the Char's Animate script, allowing for replicated setdesired/currentangle changes in M6Ds",
+	['Args'] = {
+	},
+	['Command'] = reangle
+}
+
+if player.Character ~= nil and player.Character:FindFirstChild('Humanoid') then
+	if player.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
+		cmds[reangle]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
+	end
+end
+
+function goofyanim(stepbase)
+	local rig = player.Character
+	if characterrig == nil then
+		return
+	end
+	local neck = rig:FindFirstChild('Neck', true)
+	local rshoulder = rig:FindFirstChild('Right Shoulder', true)
+	local lshoulder = rig:FindFirstChild('Left Shoulder', true)
+	local rhip = rig:FindFirstChild('Right Hip', true)
+	local lhip = rig:FindFirstChild('Left Hip', true)
+	local rootjoint = rig:FindFirstChild('RootJoint', true)
+
+	local playing_anims = {
+		['Idle'] = true,
+		['Running'] = false,
+		['Falling'] = false
+	}
+
+	workspace.CurrentCamera.CameraSubject = rig:WaitForChild('Humanoid')
+
+	rig:FindFirstChild('Humanoid').WalkSpeed = 45
+	rig:FindFirstChild('Humanoid').JumpPower = 75
+
+	local rjorgin = rootjoint.C0
+
+	local step_based_wait = false
+	if stepbase ~= "true" then
+		step_based_wait = false
+	else
+		step_based_wait = true
+	end
+
+	local function waityield()
+		if step_based_wait ~= true then
+			return wait()
+		else
+			return task.wait()
+		end
+	end
+	coroutine.wrap(function()
+		while waityield() do
+			local s,f = pcall(function()
+				if rig:FindFirstChild('Humanoid') then
+					if rig:FindFirstChild('Humanoid').MoveDirection ~= Vector3.new(0,0,0) then
+						playing_anims['Idle'] = false
+						playing_anims['Running'] = true
+					else
+						playing_anims['Idle'] = true
+						playing_anims['Running'] = false
+					end
+					if rig:FindFirstChild('Humanoid').FloorMaterial == Enum.Material.Air then
+						playing_anims['Falling'] = true
+					else
+						playing_anims['Falling'] = false
+					end
+				end
+				local idleanim = playing_anims['Idle']
+				if playing_anims['Falling'] == false then
+					if idleanim == true then
+						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
+							0,-math.sin(tick() * 4)/2.25,1*math.sin(tick() * 8)/5 - 0.2) * CFrame.Angles(math.rad(15*math.sin(tick() * 4)),
+								1*math.sin(tick() * 2)/25,0),
+							0.5
+						)
+						rhip.CurrentAngle = math.rad(10*math.sin(tick() * 4)) * 1.75
+						lhip.CurrentAngle = -math.rad(10*math.sin(tick() * 4)) * 1.75
+						rshoulder.CurrentAngle = math.rad(15*math.sin(tick() * 4 - 2)) * 2.25
+						lshoulder.CurrentAngle = -math.rad(15*math.sin(tick() * 4 - 3)) * 2.25
+						neck.CurrentAngle = -math.rad(15*math.sin(tick() * 2))
+					elseif playing_anims['Running'] == true then
+						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
+							0,0,1*math.sin(tick() * 32)/1.25 + 0.25) * CFrame.Angles(math.rad(20*math.sin(tick() * 32)-45),
+								1*math.sin(tick() * 8)/5,0),
+							0.5
+						)
+						rhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
+						lhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
+						rshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 + 2)+10)
+						lshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 - 4)-10)
+						neck.CurrentAngle = -math.rad(20*math.sin(tick() * 16))
+					end
+				else
+					rootjoint.C0 = rootjoint.C0:Lerp(rootjoint.C0 * CFrame.Angles(
+						math.rad(25),
+						0,0),
+						0.5
+					)
+				end
+			end)
+			if f then
+				break
+			end
+		end
+	end)()
+end
+cmds[goofyanim] = {
+	['Name'] = "goofyanim",
+	['CommandStyle'] = 2,
+	['Description'] = "Gives ya goofy animations, angleanim is required to be ran first! (the bool determines if task.wait is used for the animation loop)",
+	['Args'] = {
+		'bool'
+	},
+	['Command'] = goofyanim
+}
+
+--
+
+function hatnpc()
+	local char = game.Players.LocalPlayer.Character
+local hrp = char:WaitForChild('HumanoidRootPart')
+
+local hatnames = {
+	[1] = {"Accessory (Meshes/Mafiaso's Smug Grin)",'Head', CFrame.new(0,0,0)},
+	[2] = {"BlockheadBaseballCap",'Right Arm', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
+	[3] = {"Kate Hair",'Left Arm', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
+	[4] = {"LavanderHair",'Right Leg', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
+	[5] = {"Ramen",'Left Leg', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
+	[6] = {"Robloxclassicred",'Torso', CFrame.new(0,0.5,0) * CFrame.Angles(0,math.rad(90),0)},
+	[7] = {"Thinking Cap",'Torso', CFrame.new(0,-0.5,0) * CFrame.Angles(0,math.rad(90),0)},
+}
+
+for i,v in pairs(hatnames) do
+	--print(v[1])
+	if not char:FindFirstChild(v[1]) then
+		warn('Hat requirements failed.')
+		return
+	end
+end
+
+local animids = {
+	[1] = "http://www.roblox.com/asset/?id=180426354",
+	[2] = "http://www.roblox.com/asset/?id=180435571"
+}
+local function animate(hum, hhrp)
+	local runanim = Instance.new('Animation')
+	local idleanim = Instance.new('Animation')
+	runanim.AnimationId = animids[1]
+	idleanim.AnimationId = animids[2]
+
+	local loadrun = hum:LoadAnimation(runanim)
+	local loadidle = hum:LoadAnimation(idleanim)
+	local move = Instance.new('BoolValue')
+
+	move.Changed:Connect(function()
+		if move.Value == true then
+			loadrun:Play()
+			loadrun:AdjustWeight(5)
+		else
+			loadrun:Stop()
+		end
+	end)
+	loadidle:Play()
+	
+	coroutine.wrap(function()
+		while wait() do
+			if hhrp ~= nil and hhrp.Parent ~= nil then
+				if (hhrp.Velocity*Vector3.new(1,0,0)).Magnitude > 1 then
+					move.Value = true
+				else
+					move.Value = false
+				end
+			else
+				break
+			end
+		end
+	end)()
+end
+local rig = buildrig(hrp.CFrame, 1)
+local npchrp = rig:FindFirstChild('HumanoidRootPart')
+local appliedhats = Instance.new('Folder', char)
+appliedhats.Name = "AppliedHats"
+animate(rig:WaitForChild('Humanoid'),npchrp)
+coroutine.wrap(function()
+	while task.wait() do
+		if rig ~= nil then
+			if game.Players.LocalPlayer.Character ~= rig then
+				local s,f = pcall(function()
+					rig:FindFirstChild('Humanoid'):MoveTo(hrp.CFrame * CFrame.new(-3,0,2).Position)
+				end)
+				if f then
+					break
+				end
+			end
+		else
+			break
+		end
+	end
+end)()
+
+local function applyloop(handle, part, off)
+	coroutine.wrap(function()
+		while task.wait() do
+			local s,f = pcall(function()
+				handle.CFrame = part.CFrame * off
+				handle.Parent = appliedhats
+			end)
+			if f then
+				break
+			end
+		end
+	end)()
+end
+
+game:GetService('RunService').Heartbeat:Connect(function()
+	for i,v in pairs(appliedhats:GetDescendants()) do
+		if v:IsA('BasePart') then
+			v.Velocity = Vector3.new(0,650,0)
+		end
+	end
+end)
+
+for i,v in pairs(hatnames) do
+	if char:FindFirstChild(v[1]) then
+		local hat = char:FindFirstChild(v[1])
+		local limb = rig:FindFirstChild(v[2])
+		local offset = v[3]
+		if hat:FindFirstChild('AccessoryWeld', true) then
+			hat:FindFirstChild('AccessoryWeld', true):Destroy()
+		end
+		if hat:FindFirstChild('Mesh', true) and hat.Name ~= hatnames[1][1] then
+			hat:FindFirstChild('Mesh', true):Destroy()
+		end
+		if hat:FindFirstChild('Handle', true) then
+			local handle = hat:FindFirstChild('Handle', true)
+			applyloop(handle, limb, offset)
+		end
+	end
+end
+
+local scriptkilled = false
+
+local function swapchar()
+	if game.Players.LocalPlayer.Character == char then
+		game.Players.LocalPlayer.Character = rig
+		workspace.CurrentCamera.CameraSubject = rig:WaitForChild('Humanoid')
+	else
+		game.Players.LocalPlayer.Character = char
+		workspace.CurrentCamera.CameraSubject = char:WaitForChild('Humanoid')
+	end
+end
+
+char.Humanoid.Died:Connect(function()
+    scriptkilled = true
+    game.Players.LocalPlayer.Character = char
+	workspace.CurrentCamera.CameraSubject = char:WaitForChild('Humanoid')
+	rig:Destroy()
+end)
+
+game:GetService('UserInputService').InputBegan:Connect(function(k)
+	if scriptkilled == false and k.KeyCode == Enum.KeyCode.Period and game:GetService('UserInputService'):GetFocusedTextBox() == nil then
+		swapchar()
+	end
+end)
+end
+cmds[hatnpc] = {
+	['Name'] = "hatnpc",
+	['CommandStyle'] = 2,
+	['Description'] = 'Creates a NPC that follows you around via hats, you can control it via a toggle binded to "." (RCD has to be off).',
+	['Args'] = {
+	},
+	['Warning'] = {workspace:GetFullName(), "If Reject Character Deletions (RCD) is enabled, this command won't be replicated"},
+	['Command'] = hatnpc
+}
+
+
+--
+
+--[[
+UI/Misc
+]]
+
+
+function createproblemswindow(container, path, cmderror)
+	local problemwindow = Instance.new('Frame', container)
+	problemwindow.Visible = false
+	problemwindow.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	problemwindow.BackgroundTransparency = 0.25
+	problemwindow.ZIndex = 10
+	problemwindow.Size = UDim2.new(0, 170,0, 100)
+	local issuetitle = Instance.new('TextLabel', problemwindow)
+	issuetitle.Text = "Command problems found"
+	issuetitle.Font = Enum.Font.SourceSansBold
+	issuetitle.TextColor3 = Color3.fromRGB(255,255,0)
+	issuetitle.TextSize = 14
+	issuetitle.Size = UDim2.new(1, 0,0.15, 0)
+	issuetitle.BackgroundTransparency = 1
+	local issue = Instance.new('TextLabel', problemwindow)
+	issue.Text = cmderror
+	issue.TextWrapped = true
+	issue.Font = Enum.Font.Jura
+	issue.FontFace.Bold = true
+	issue.TextColor3 = Color3.fromRGB(255,0,0)
+	issue.TextSize = 14
+	issue.Size = UDim2.new(0.95, 0,0.712, 0)
+	issue.Position = UDim2.new(0.025, 0,0.2, 0)
+	issue.BackgroundTransparency = 1
+	local pathtxt = Instance.new('TextLabel', problemwindow)
+	pathtxt.Text = path
+	pathtxt.TextWrapped = true
+	pathtxt.Font = Enum.Font.Jura
+	pathtxt.TextColor3 = Color3.fromRGB(110, 195, 255)
+	pathtxt.TextSize = 10
+	pathtxt.Size = UDim2.new(1.435, 0,0.279, 0)
+	pathtxt.Position = UDim2.new(-0.224, 0,-0.357, 0)
+	pathtxt.BackgroundTransparency = 0.25
+	pathtxt.BackgroundColor3 = Color3.fromRGB(0,0,0)
+	coroutine.wrap(function()
+		while task.wait() do
+			if problemwindow ~= nil then
+				local ml = UserInputService:GetMouseLocation()
+				problemwindow.Position = UDim2.fromOffset(ml.X-175, ml.Y-125)
+			else
+				break
+			end
+		end
+	end)()
+	return problemwindow
+end
+
+function createcommandbar()
+	local Frame = Instance.new("Frame")
+	local Frame_2 = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local UIStroke = Instance.new("UIStroke")
+	local Frame_3 = Instance.new("Frame")
+	local ImageLabel = Instance.new("ImageLabel")
+	local UIGradient = Instance.new("UIGradient")
+	local StrokeBox1 = Instance.new("Frame")
+	local UICorner_2 = Instance.new("UICorner")
+	local UIStroke_2 = Instance.new("UIStroke")
+	local CMDINP = Instance.new("TextBox")
+	local CmdCopy = Instance.new("TextLabel")
+	local CmdIcon = Instance.new("TextLabel")
+	local TextHolder = Instance.new("Frame")
+
+	local CMDCaret = Instance.new('Frame', CMDINP)
+	TextHolder.Parent = Frame
+	TextHolder.Size = UDim2.new(1, 0,1, 0)
+	TextHolder.BackgroundTransparency = 1
+	TextHolder.ClipsDescendants = true
+
+	CmdIcon.Parent = Frame
+	CmdIcon.Text = ">"
+	CmdIcon.BackgroundTransparency = 1
+	CmdIcon.Position = UDim2.new(0, 0,0.025, 0)
+	CmdIcon.Size = UDim2.new(0.15, 0,0.9, 0)
+	CmdIcon.Font = Enum.Font.Jura
+	CmdIcon.TextSize = 35
+	CmdIcon.TextColor3 = Color3.fromRGB(255,255,255)
+
+	Frame.Name = "cmd_frame"
+	Frame.Parent = MainContainer
+	Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Frame.BackgroundTransparency = 1.000
+	Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Frame.BorderSizePixel = 0
+	Frame.Position = cmdbarhidepos
+	Frame.Size = UDim2.new(0, 250, 0, 45)
+
+	Frame_2.Parent = Frame
+	Frame_2.BackgroundColor3 = cmdbarbackgroundcolor
+	Frame_2.BackgroundTransparency = 0.250
+	Frame_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Frame_2.BorderSizePixel = 0
+	Frame_2.Size = UDim2.new(1, 0, 1, 0)
+	Frame_2.ZIndex = 0
+
+	UICorner.CornerRadius = UDim.new(0, 2)
+	UICorner.Parent = Frame_2
+
+	UIStroke.Color = Color3.fromRGB(0, 0, 0)
+	UIStroke.Thickness = 2
+	UIStroke.Transparency = 0.5
+	UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	UIStroke.Parent = Frame_2
+
+	Frame_3.Parent = Frame_2
+	Frame_3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Frame_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Frame_3.BorderSizePixel = 0
+	Frame_3.Position = UDim2.new(0, 0, 0.949999988, 0)
+	Frame_3.Size = UDim2.new(1, 0, 0.0500000007, 0)
+
+	ImageLabel.Parent = Frame_3
+	ImageLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	ImageLabel.BackgroundTransparency = 1.000
+	ImageLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	ImageLabel.BorderSizePixel = 0
+	ImageLabel.Position = UDim2.new(-1.4, 0, -11.8, 0)
+	ImageLabel.Size = UDim2.new(3.8, 0, 24.38, 0)
+	ImageLabel.Image = "rbxassetid://71180616723620"
+
+	UIGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 1.00), NumberSequenceKeypoint.new(0.35, 1.00), NumberSequenceKeypoint.new(0.37, 0.00), NumberSequenceKeypoint.new(0.63, 0.00), NumberSequenceKeypoint.new(0.65, 1.00), NumberSequenceKeypoint.new(1.00, 1.00)}
+	UIGradient.Parent = ImageLabel
+
+	StrokeBox1.Name = "StrokeBox1"
+	StrokeBox1.Parent = Frame_2
+	StrokeBox1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	StrokeBox1.BackgroundTransparency = 1.000
+	StrokeBox1.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	StrokeBox1.BorderSizePixel = 0
+	StrokeBox1.Size = UDim2.new(1, 0, 1, 0)
+
+	UICorner_2.CornerRadius = UDim.new(0, 2)
+	UICorner_2.Parent = StrokeBox1
+
+	UIStroke_2.Color = Color3.fromRGB(255, 255, 255)
+	UIStroke_2.Thickness = 1.5
+	UIStroke_2.Transparency = 0.5
+	UIStroke_2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	UIStroke_2.Parent = StrokeBox1
+
+	CMDINP.Parent = TextHolder
+	CMDINP.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	CMDINP.BackgroundTransparency = 1
+	CMDINP.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	CMDINP.BorderSizePixel = 0
+	CMDINP.Position = UDim2.new(0.15, 0, 0.05, 0)
+	CMDINP.Size = UDim2.new(0.85, 0, 0.9, 0)
+	CMDINP.ZIndex = 2
+	CMDINP.Font = Enum.Font.Nunito
+	CMDINP.PlaceholderColor3 = Color3.fromRGB(143, 143, 143)
+	CMDINP.Text = ""
+	CMDINP.TextColor3 = Color3.fromRGB(254, 252, 255)
+	CMDINP.TextSize = 25.000
+	CMDINP.TextTransparency = 0.995
+	CMDINP.TextXAlignment = Enum.TextXAlignment.Left
+	CMDINP.ClearTextOnFocus = false
+
+	CmdCopy.Parent = TextHolder
+	CmdCopy.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	CmdCopy.BackgroundTransparency = 1.000
+	CmdCopy.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	CmdCopy.BorderSizePixel = 0
+	CmdCopy.Position = UDim2.new(0.15, 0, 0.05, 0)
+	CmdCopy.Size = UDim2.new(0.85, 0, 0.9, 0)
+	CmdCopy.Font = Enum.Font.Nunito
+	CmdCopy.Text = ""
+	CmdCopy.TextColor3 = Color3.fromRGB(255, 255, 255)
+	CmdCopy.TextSize = 25.000
+	CmdCopy.TextXAlignment = Enum.TextXAlignment.Left
+
+	CMDCaret.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	CMDCaret.BackgroundTransparency = 0
+	CMDCaret.Size = UDim2.new(0, 2,0, 25)
+	CMDCaret.Position = UDim2.new(0, 0,0.15, 0)
+	CMDCaret.BorderColor3 = Color3.fromRGB(65, 65, 65)
+
+	local caretfadetime = 0.375
+	local function caretidleupdate()
+		coroutine.wrap(function()
+			local is_broken = false
+			CMDINP:GetPropertyChangedSignal('CursorPosition'):Connect(function()
+				is_broken = true
+			end)
+			CMDINP:GetPropertyChangedSignal('Text'):Connect(function()
+				is_broken = true
+			end)
+			TweenService:Create(CMDCaret,
+				TweenInfo.new(0, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+				{BackgroundTransparency = 0}
+			):Play()
+			TweenService:Create(ImageLabel,
+				TweenInfo.new(0, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+				{ImageTransparency = 0}
+			):Play()
+			task.wait()
+			TweenService:Create(ImageLabel,
+				TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+				{ImageTransparency = 0.25}
+			):Play()
+			while task.wait() do
+				if is_broken == false then
+					local bgtransp = CMDCaret.BackgroundTransparency
+					local settransp = 0
+					if bgtransp >= 0.5 then
+						settransp = 0
+					else
+						settransp = 1
+					end
+					TweenService:Create(CMDCaret,
+						TweenInfo.new(caretfadetime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+						{BackgroundTransparency = settransp}
+					):Play()
+					task.wait(caretfadetime)
+				else
+					break
+				end
+			end
+		end)()
+	end
+
+	local function updatetext()
+		local Scale = 0
+		if CMDINP:IsFocused() == true then
+			local tb = TextService:GetTextSize(
+				string.sub(CMDINP.Text,1,CMDINP.CursorPosition-1),
+				25,
+				Enum.Font.Nunito,
+				Vector2.new(math.huge,math.huge))
+			Scale = (tb.X/CMDINP.AbsoluteSize.X)
+		else
+			Scale = 0.95
+		end
+
+		TweenService:Create(CMDCaret,
+			TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{Position = UDim2.fromScale(Scale, 0.15)}
+		):Play()
+		CmdCopy.Text = CMDINP.Text
+	end
+
+	local function cmdinputanimate()
+		caretidleupdate()
+		CMDINP:GetPropertyChangedSignal('Text'):Connect(function()
+			updatetext()
+			caretidleupdate()
+		end)
+		CMDINP:GetPropertyChangedSignal('CursorPosition'):Connect(function()
+			updatetext()
+			caretidleupdate()
+		end)
+		CMDINP.FocusLost:Connect(function(enterpressed)
+			updatetext()
+			caretidleupdate()
+		end)
+	end
+
+	cmdinputanimate()
+	return {CMDINP, Frame, Frame_2}
+end
+
+local commandbarassets = createcommandbar()
+local cmdinput = commandbarassets[1]
+local cmdholder = commandbarassets[2]
+local cmdbackground = commandbarassets[3]
+
+local function appearence(toggle)
+	if toggle == true then
+		cmdinput:CaptureFocus()
+		game:GetService('TweenService'):Create(cmdholder, TweenInfo.new(
+			0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+			),
+			{Position = cmdbarshowpos}):Play()
+	else
+		game:GetService('TweenService'):Create(cmdholder, TweenInfo.new(
+			0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In
+			),
+			{Position = cmdbarhidepos}):Play()
+	end
+end
+
+function cmdbartoggle()
+	
+	UserInputService.InputBegan:Connect(function(uit)
+		if uit.KeyCode == prefix and not UserInputService:GetFocusedTextBox() then
+			cmdinput.Text = ""
+			appearence(true)
+		end
+	end)
+	cmdinput.FocusLost:Connect(function()
+		if cmdtabinprogress == false then
+			appearence(false)
+		end
+	end)    
+end
+
+cmdbartoggle()
+
+function searchquerymain()
+	local queryframe = Instance.new('CanvasGroup', cmdholder)
+	queryframe.Name = "Query"
+	queryframe.Size = UDim2.new(1, 0,4, 0)
+	queryframe.Position = UDim2.new(0, 0,-4.25, 0)
+	queryframe.BackgroundTransparency = 1
+	local canvasgrad = Instance.new('UIGradient', queryframe)
+	canvasgrad.Rotation = -90
+	canvasgrad.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 0.00), NumberSequenceKeypoint.new(0.30, 0.00), NumberSequenceKeypoint.new(1.00, 1.00)}
+
+	local queryslots = {
+		[1] = false,
+		[2] = false,
+		[3] = false
+	}
+
+	local function createsuggestion(commandname, arg1, arg2, arg3, commandstyle, slot, warning)
+		local slotcords = {
+			[1] = 0.75,
+			[2] = 0.5,
+			[3] = 0.25
+		}
+		local cmdstyleicons = {
+			[1] = "http://www.roblox.com/asset/?id=84499251063796", --UI
+			[2] = "http://www.roblox.com/asset/?id=72598226928378", --Script
+			[3] = "http://www.roblox.com/asset/?id=108095699457500" --Command break
+		}
+		local fixedposition = UDim2.new(0.05,0,slotcords[slot],0)
+		local fixedsize = UDim2.new(0.9, 0,0.2, 0)
+		local frame = Instance.new('Frame', queryframe)
+		queryslots[slot] = frame
+		frame.Name = commandname
+		frame.Size = UDim2.new(fixedsize.X.Scale/1.15,0,fixedsize.Y.Scale/1.15,0)
+		frame.Position = fixedposition + UDim2.new(0.06,0,-0.1,0)
+		frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+		frame.BackgroundTransparency = 0.3
+		local framestroke = Instance.new("UIStroke", frame)
+		local framecorner = Instance.new('UICorner', frame)
+		local strokebox = Instance.new('Frame',frame)
+		local strokeboxstroke = Instance.new('UIStroke', strokebox)
+		local strokeboxcorner = Instance.new('UICorner', strokebox)
+		framestroke.Color = Color3.fromRGB(0,0,0)
+		framestroke.Thickness = 2
+		framestroke.Transparency = 0.75
+		strokebox.BackgroundTransparency = 1
+		strokebox.Size = UDim2.new(1,0,1,0)
+		strokeboxstroke.Color = Color3.fromRGB(255, 255, 255)
+		strokeboxstroke.Thickness = 1.5
+		strokeboxstroke.Transparency = 0.75
+		framecorner.CornerRadius = UDim.new(0, 2)
+		strokeboxcorner.CornerRadius = UDim.new(0, 2)
+		TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out),
+			{Position = fixedposition}):Play()
+		TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out),
+			{Size = fixedsize}):Play()
+
+		local cmdstyleico = Instance.new('ImageLabel', frame)
+		cmdstyleico.Position = UDim2.new(0.858, 0,0.194, 0)
+		cmdstyleico.Size = UDim2.new(0.112, 0,0.583, 0)
+		cmdstyleico.BackgroundTransparency = 1
+		cmdstyleico.ImageTransparency = 0.5
+		cmdstyleico.Image = cmdstyleicons[commandstyle]
+		cmdstyleico.ScaleType = Enum.ScaleType.Fit
+		local cmdtitle = Instance.new('TextLabel', frame)
+		cmdtitle.Position = UDim2.new(0.058, 0,0, 0)
+		cmdtitle.Size = UDim2.new(0.232, 0,1, 0)
+		cmdtitle.BackgroundTransparency = 1
+		cmdtitle.TextColor3 = Color3.fromRGB(255,255,255)
+		cmdtitle.TextSize = 17
+		cmdtitle.Font = Enum.Font.Nunito
+		cmdtitle.Text = commandname
+
+		local argumentswindow = Instance.new('Frame', frame)
+		argumentswindow.Position = UDim2.new(0.325, 0,0.195, 0)
+		argumentswindow.Size = UDim2.new(0.5, 0,0.585, 0)
+		argumentswindow.BackgroundTransparency = 1
+
+		local argtemplate = Instance.new('TextLabel')
+		argtemplate.BackgroundTransparency = 1
+		argtemplate.Font = Enum.Font.Nunito
+		argtemplate.FontFace.Bold = true
+		argtemplate.TextSize = 14
+		argtemplate.TextColor3 = Color3.fromRGB(255,255,255)
+		argtemplate.Size = UDim2.new(0.325, 0,1, 0)
+		argtemplate.TextTransparency = 0.25
+
+		local function createarg(argnum, input)
+			local arg = argtemplate:Clone()
+			arg.Parent = argumentswindow
+			arg.Text = "{"..input.."}"
+			local argpos = {
+				[1] = UDim2.new(0, 0,0, 0),
+				[2] = UDim2.new(0.325, 0,0, 0),
+				[3] = UDim2.new(0.65, 0,0, 0)
+			}
+			arg.Position = argpos[argnum]
+		end
+		if arg1 ~= nil then
+			createarg(1, arg1)
+		end
+		if arg2 ~= nil then
+			createarg(2, arg2)
+		end
+		if arg3 ~= nil then
+			createarg(3, arg3)
+		end
+
+		local function createwarning()
+			local warningissue = warning[2]
+			local warningpath = warning[1]
+			local warnholder = Instance.new('ImageLabel', frame)
+			warnholder.BackgroundColor3 = Color3.fromRGB(0,0,0)
+			warnholder.BackgroundTransparency = 0.5
+			warnholder.Position = UDim2.new(-0.045, 0,-0.1, 0)
+			warnholder.Size = UDim2.new(0.1, 0,0.585, 0)
+			warnholder.Image = "http://www.roblox.com/asset/?id=18797417802"
+			warnholder.ImageColor3 = Color3.fromRGB(255,255,0)
+			warnholder.ScaleType = Enum.ScaleType.Fit
+			Instance.new('UICorner', warnholder).CornerRadius = UDim.new(0,2)
+			local warnstroke = Instance.new('UIStroke', warnholder)
+			warnstroke.Color = Color3.fromRGB(0,0,0)
+			warnstroke.Thickness = 2.25
+			warnstroke.Transparency = 0.75
+			local warnbox = Instance.new('Frame',warnholder)
+			warnbox.BackgroundTransparency = 1
+			warnbox.Size = UDim2.new(1,0,1,0)
+			local warnboxstroke = Instance.new('UIStroke', warnbox)
+			Instance.new('UICorner', warnbox).CornerRadius = UDim.new(0,2)
+			warnboxstroke.Color = Color3.fromRGB(255, 255, 255)
+			warnboxstroke.Thickness = 1.5
+			warnboxstroke.Transparency = 0.75
+			local warn = createproblemswindow(warnings, warningpath, warningissue)
+			warn.Name = "CommandWarning"
+			warnholder.MouseEnter:Connect(function()
+				warn.Visible = true
+			end)
+			warnholder.MouseLeave:Connect(function()
+				warn.Visible = false
+			end)
+			frame.Destroying:Connect(function()
+				warn:Destroy()
+			end)
+		end
+		if warning ~= nil then
+			createwarning()
+		end
+	end
+	local function canvasupdate()
+		coroutine.wrap(function()
+			local function tweeninf(quickness)
+				return TweenInfo.new(quickness, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			end
+			TweenService:Create(queryframe, tweeninf(0), {GroupTransparency = 0.7}):Play()
+			TweenService:Create(queryframe, tweeninf(0), {GroupColor3 = Color3.fromRGB(127,127,127)}):Play()
+			task.wait()
+			TweenService:Create(queryframe, tweeninf(0.15), {GroupTransparency = 0}):Play()
+			TweenService:Create(queryframe, tweeninf(0.15), {GroupColor3 = Color3.fromRGB(255,255,255)}):Play()
+		end)()
+	end
+
+	local function refreshcanvas()
+		queryslots[1] = nil
+		queryslots[2] = nil
+		queryslots[3] = nil
+		for i,v in pairs(queryframe:GetChildren()) do
+			if v:IsA('Frame') then
+				v:Destroy()
+			end
+		end
+		canvasupdate()
+	end
+
+	cmdinput.FocusLost:Connect(function(ep)
+		if ep == true then
+			for i,v in pairs(cmds) do
+				local args = string.split(cmdinput.Text, " ")
+				if v['Name'] and string.lower(args[1]) == string.lower(v['Name']) and v['Command'] then
+					task.spawn(v['Command'],args[2],args[3], args[4])
+				end
+			end
+		end
+		if cmdtabinprogress == false then
+			refreshcanvas()
+		end
+	end)    
+
+	UserInputService.InputBegan:Connect(function(uit)
+		if uit.KeyCode == Enum.KeyCode.Tab and cmdinput:IsFocused() then
+			if queryslots[1] ~= nil then
+				coroutine.wrap(function()
+					local tabbedcmd = queryslots[1].Name
+					cmdtabinprogress = true
+					cmdinput:ReleaseFocus()
+					cmdbackground.BackgroundColor3 = Color3.fromRGB(100,100,100)
+					task.wait(0.025)
+					TweenService:Create(cmdbackground,TweenInfo.new(
+						0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.Out
+						), {BackgroundColor3 = cmdbarbackgroundcolor}):Play()
+					cmdinput.Text = tabbedcmd
+					cmdtabinprogress = false
+					cmdinput:CaptureFocus()
+				end)()
+			end
+		end
+	end)
+
+	cmdinput:GetPropertyChangedSignal('Text'):Connect(function()
+		refreshcanvas()
+		for i,v in pairs(cmds) do
+			if v['Name'] and string.match(string.lower(v['Name']), string.lower(string.split(cmdinput.Text, " ")[1])) then
+				local slotreserved = nil
+				if queryslots[1] == nil then
+					queryslots[1] = true
+					slotreserved = 1
+				elseif  queryslots[2] == nil then
+					queryslots[2] = true
+					slotreserved = 2
+				elseif  queryslots[3] == nil then
+					queryslots[3] = true
+					slotreserved = 3
+				end
+				if slotreserved ~= nil then
+					local argtable = v['Args']
+					local warning = nil
+					if v['Warning'] then
+						warning = v['Warning']
+					end
+					createsuggestion(v['Name'], argtable[1], argtable[2], argtable[3], v['CommandStyle'], slotreserved, warning)
+				else
+					return
+				end
+			end
+		end
+	end)
+end
+
+searchquerymain()
+
+function createcmdsui()
+    local frameholder = Instance.new('Frame', MainContainer)
+    frameholder.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    frameholder.BackgroundTransparency = 0.250
+    frameholder.BorderSizePixel = 0
+    frameholder.Position = UDim2.new(0.5, -125, 0.5, -125)
+    frameholder.Size = UDim2.new(0, 250, 0, 250)
+    frameholder.ZIndex = 0
+    frameholder.Active = true
+    frameholder.Draggable = true
+    Instance.new('UICorner', frameholder).CornerRadius = UDim.new(0,2)
+	local framestroke = Instance.new('UIStroke', frameholder)
+	framestroke.Color = Color3.fromRGB(0,0,0)
+	framestroke.Thickness = 2
+	framestroke.Transparency = 0.5
+	local warnbox = Instance.new('Frame',frameholder)
+	warnbox.BackgroundTransparency = 1
+	warnbox.Size = UDim2.new(1,0,1,0)
+	local warnboxstroke = Instance.new('UIStroke', warnbox)
+	Instance.new('UICorner', warnbox).CornerRadius = UDim.new(0,2)
+	warnboxstroke.Color = Color3.fromRGB(255, 255, 255)
+	warnboxstroke.Thickness = 1.5
+	warnboxstroke.Transparency = 0.5
+    local cmdstxt = Instance.new('TextLabel', frameholder)
+    cmdstxt.BackgroundTransparency = 1
+    cmdstxt.Position = UDim2.new(0, 0, 0.044, 0)
+    cmdstxt.Size = UDim2.new(0.272, 0, 0.1, 0)
+    cmdstxt.Font = Enum.Font.Nunito
+    cmdstxt.Text = "CMDS"
+    cmdstxt.TextColor3 = Color3.fromRGB(255, 255, 255)
+    cmdstxt.TextSize = 28.000
+    cmdstxt.TextXAlignment = Enum.TextXAlignment.Right
+    local cmdscaret = Instance.new('Frame', cmdstxt)
+    cmdscaret.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    cmdscaret.BackgroundTransparency = 0.020
+    cmdscaret.BorderColor3 = Color3.fromRGB(65, 65, 65)
+    cmdscaret.Position = UDim2.new(1, 0, -0.025, 0)
+    cmdscaret.Size = UDim2.new(0, 2, 0, 25)
+    coroutine.wrap(function()
+        while task.wait() do
+            if cmdscaret then
+                local bgtransp = cmdscaret.BackgroundTransparency
+                local settransp = 0
+                if bgtransp >= 0.5 then
+                    settransp = 0
+                else
+                    settransp = 1
+                end
+                TweenService:Create(cmdscaret,
+                    TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                    {BackgroundTransparency = settransp}
+                ):Play()
+                task.wait(0.5)
+            else
+                break
+            end
+        end
+    end)()
+	local cg = Instance.new('CanvasGroup', frameholder)
+	cg.BackgroundTransparency = 1
+	cg.Size = UDim2.new(1,0,1,0)
+    local cmdlist = Instance.new('ScrollingFrame', cg)
+    cmdlist.Active = true
+    cmdlist.BackgroundTransparency = 1
+    cmdlist.BorderSizePixel = 0
+    cmdlist.Position = UDim2.new(0, 0, 0.175, 0)
+    cmdlist.Size = UDim2.new(1, 0, 0.825, 0)
+    cmdlist.BottomImage = ""
+    cmdlist.ScrollBarThickness = 6
+    cmdlist.TopImage = ""
+	local listlayout = Instance.new('UIListLayout', cmdlist)
+	listlayout.SortOrder = Enum.SortOrder.LayoutOrder
+	listlayout.Padding = UDim.new(0, 2)
+	listlayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		cmdlist.CanvasSize = UDim2.new(0,0,0,listlayout.AbsoluteContentSize.Y)
+	end)
+    local closebutton = Instance.new('TextButton', frameholder)
+    closebutton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    closebutton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    closebutton.BorderSizePixel = 0
+    closebutton.Position = UDim2.new(0.4, 0, 0.964, 0)
+    closebutton.Size = UDim2.new(0.195, 0, 0.075, 0)
+    closebutton.ZIndex = 5
+    closebutton.Font = Enum.Font.SourceSansBold
+    closebutton.Text = "Close"
+    closebutton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    closebutton.TextSize = 19
+	closebutton.MouseButton1Click:Connect(function()
+		frameholder:Destroy()
+	end)
+    local closestroke = Instance.new('UIStroke', closebutton)
+	closestroke.Color = Color3.fromRGB(0,0,0)
+	closestroke.Thickness = 2
+    closestroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Instance.new('UICorner', closebutton).CornerRadius = UDim.new(0,2)
+    local searchinp = Instance.new('TextBox', frameholder)
+    searchinp.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    searchinp.BackgroundTransparency = 0.5
+    searchinp.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    searchinp.BorderSizePixel = 0
+    searchinp.Position = UDim2.new(0.46, 0, 0.052, 0)
+    searchinp.Size = UDim2.new(0.48, 0, 0.082, 0)
+    searchinp.Font = Enum.Font.SourceSans
+    searchinp.PlaceholderText = "Search command query"
+    searchinp.Text = ""
+    searchinp.TextColor3 = Color3.fromRGB(255, 255, 255)
+    searchinp.TextSize = 14.000
+	local function tweeninf(quickness)
+		return TweenInfo.new(quickness, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	end
+	searchinp:GetPropertyChangedSignal('Text'):Connect(function()
+		coroutine.wrap(function()
+			TweenService:Create(cg, tweeninf(0), {GroupTransparency = 0.35}):Play()
+		TweenService:Create(cg, tweeninf(0), {GroupColor3 = Color3.fromRGB(80,80,80)}):Play()
+		for i,v in pairs(cmdlist:GetChildren()) do
+			if v:IsA('Frame') then
+				if string.match(string.lower(v.Name), string.lower(string.split(searchinp.Text, " ")[1])) then
+					v.Visible = true
+				else
+					v.Visible = false
+				end
+			end
+		end
+		task.wait()
+		TweenService:Create(cg, tweeninf(0.1), {GroupTransparency = 0}):Play()
+		TweenService:Create(cg, tweeninf(0.1), {GroupColor3 = Color3.fromRGB(255,255,255)}):Play()
+		end)()
+	end)
+    local searchinpstroke = Instance.new('UIStroke', searchinp)
+	searchinpstroke.Color = Color3.fromRGB(125,125,125)
+	searchinpstroke.Thickness = 2
+	searchinpstroke.Transparency = 0.5
+    searchinpstroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    -- local searchglass = Instance.new('ImageLabel', searchinp)
+    -- searchglass.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    -- searchglass.BackgroundTransparency = 1.000
+    -- searchglass.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    -- searchglass.BorderSizePixel = 0
+    -- searchglass.Position = UDim2.new(0.86, 0, -0.34, 0)
+    -- searchglass.Size = UDim2.new(0.26, 0, 1.33, 0)
+    -- searchglass.Image = "rbxassetid://96060641709608"
+    -- searchglass.ScaleType = Enum.ScaleType.Fit
+	local function addcmd(cmdname, cmddescription, cmdargs, warning)
+		local cmdinfoframe = Instance.new('Frame', cmdlist)
+		cmdinfoframe.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		cmdinfoframe.BackgroundTransparency = 0.75
+		cmdinfoframe.BorderSizePixel = 0
+		cmdinfoframe.Size = UDim2.new(0.975, 0, 0.034, 50)
+		cmdinfoframe.Name = cmdname
+		local cmdinfoname = Instance.new('TextLabel', cmdinfoframe)
+		cmdinfoname.BackgroundTransparency = 1
+		cmdinfoname.Position = UDim2.new(0, 0, 0.02, 0)
+		cmdinfoname.Size = UDim2.new(0, 122, 0, 21)
+		cmdinfoname.Font = Enum.Font.Nunito
+		cmdinfoname.Text = cmdname
+		cmdinfoname.TextColor3 = Color3.fromRGB(255, 255, 255)
+		cmdinfoname.TextSize = 15
+		local argumentsinfo = Instance.new('TextLabel', cmdinfoframe)
+		argumentsinfo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		argumentsinfo.BackgroundTransparency = 1
+		argumentsinfo.Position = UDim2.new(0.48, 0, 0.052, 0)
+		argumentsinfo.Size = UDim2.new(0, 122, 0, 15)
+		argumentsinfo.Font = Enum.Font.Nunito
+		if warning ~= nil then
+			local warningissue = warning[2]
+				local warningpath = warning[1]
+				local warnholder = Instance.new('ImageLabel', cmdinfoframe)
+				warnholder.BackgroundColor3 = Color3.fromRGB(0,0,0)
+				warnholder.BackgroundTransparency = 0.5
+				warnholder.Position = UDim2.new(0, 0,0.706, 0)
+				warnholder.Size = UDim2.new(0.084, 0,0.286, 0)
+				warnholder.Image = "http://www.roblox.com/asset/?id=18797417802"
+				warnholder.ImageColor3 = Color3.fromRGB(255,255,0)
+				warnholder.ScaleType = Enum.ScaleType.Fit
+				Instance.new('UICorner', warnholder).CornerRadius = UDim.new(0,2)
+				local warnstroke = Instance.new('UIStroke', warnholder)
+				warnstroke.Color = Color3.fromRGB(0,0,0)
+				warnstroke.Thickness = 2.25
+				warnstroke.Transparency = 0.75
+				local warnbox = Instance.new('Frame',warnholder)
+				warnbox.BackgroundTransparency = 1
+				warnbox.Size = UDim2.new(1,0,1,0)
+				local warnboxstroke = Instance.new('UIStroke', warnbox)
+				Instance.new('UICorner', warnbox).CornerRadius = UDim.new(0,2)
+				warnboxstroke.Color = Color3.fromRGB(255, 255, 255)
+				warnboxstroke.Thickness = 1.5
+				warnboxstroke.Transparency = 0.75
+				local warn = createproblemswindow(warnings, warningpath, warningissue)
+				warn.Name = "CommandWarning"
+				warnholder.MouseEnter:Connect(function()
+					warn.Visible = true
+				end)
+				warnholder.MouseLeave:Connect(function()
+					warn.Visible = false
+				end)
+				frameholder.Destroying:Connect(function()
+					warn:Destroy()
+				end)
+		end
+		Instance.new('UICorner', cmdinfoframe).CornerRadius = UDim.new(0,3)
+		local argsstring = ""
+		if cmdargs ~= nil then
+			for i,v in pairs(cmdargs) do
+				argsstring = argsstring.."{"..tostring(v).."} "
+			end
+		end
+		argumentsinfo.Text = argsstring
+		argumentsinfo.TextColor3 = Color3.fromRGB(255, 255, 255)
+		argumentsinfo.TextSize = 15
+		local cmddescriptor = Instance.new('TextLabel', cmdinfoframe)
+		cmddescriptor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		cmddescriptor.BackgroundTransparency = 1.000
+		cmddescriptor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		cmddescriptor.BorderSizePixel = 0
+		cmddescriptor.Position = UDim2.new(0.016, 0, 0.27, 0)
+		cmddescriptor.Size = UDim2.new(0.96, 0, 0.72, 0)
+		cmddescriptor.Font = Enum.Font.SourceSans
+		cmddescriptor.Text = cmddescription
+		cmddescriptor.TextColor3 = Color3.fromRGB(167, 166, 168)
+		cmddescriptor.TextSize = 14
+		cmddescriptor.TextWrapped = true
+		local txtbutton = Instance.new('TextButton', cmdinfoframe)
+		txtbutton.Text = ""
+		txtbutton.Size = UDim2.new(1,0,1,0)
+		txtbutton.Transparency = 1
+		txtbutton.MouseEnter:Connect(function()
+			TweenService:Create(cmdinfoframe,TweenInfo.new(
+				0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+			), {BackgroundColor3 = Color3.fromRGB(200,200,200)}):Play()
+		end)
+		txtbutton.MouseLeave:Connect(function()
+			TweenService:Create(cmdinfoframe,TweenInfo.new(
+				0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+			), {BackgroundColor3 = Color3.fromRGB(0,0,0)}):Play()
+		end)
+		txtbutton.MouseButton1Click:Connect(function()
+			if cmdinput:IsFocused() == false then
+				cmdinput.Text = cmdname
+				appearence(true)
+			end
+			TweenService:Create(cmdinfoframe,TweenInfo.new(
+				0, Enum.EasingStyle.Linear, Enum.EasingDirection.Out
+			), {BackgroundTransparency = 0}):Play()
+			task.wait()
+			TweenService:Create(cmdinfoframe,TweenInfo.new(
+				0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut
+			), {BackgroundTransparency = 0.75}):Play()
+		end)
+	end
+	for i,v in pairs(cmds) do
+		if v['Name'] and v['Args'] and v['Description'] then
+			addcmd(v['Name'], v['Description'], v['Args'], v['Warning'])
+		end
+	end
+end
