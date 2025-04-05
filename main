@@ -18,6 +18,8 @@ local UserInputService = game:GetService('UserInputService')
 local CoreGui = game:GetService('CoreGui')
 local StarterGui = game:GetService('StarterGui')
 local VRService = game:GetService('VRService')
+local TeleportService = game:GetService('TeleportService')
+local Players = game:GetService('Players')
 
 
 --[[
@@ -462,6 +464,32 @@ cmds[walkspeedc] = {
 		'speed'
 	},
 	['Command'] = walkspeedc
+}
+--
+
+function rejoin() --ts command was forked from iy cuz i was too lazy to look at teleportservice lol
+	local s,f = pcall(function()
+		if #Players:GetPlayers() <= 1 then
+			player:Kick(afullname..": Hold on..")
+			task.wait(1)
+			TeleportService:Teleport(game.PlaceId, player)
+		else
+			admin_notify('Attemping', 'Trying to rejoin the game...', 5)
+			task.wait(.5)
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+		end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[rejoin] = {
+	['Name'] = "rejoin",
+	['CommandStyle'] = 2,
+	['Description'] = 'Attempts to rejoin the current server.',
+	['Args'] = {
+	},
+	['Command'] = rejoin
 }
 
 --
