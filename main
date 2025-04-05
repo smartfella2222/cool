@@ -533,6 +533,7 @@ function diedsignal()
 	local s,f = pcall(function()
 		if replicatesignal then
 			replicatesignal(player.ConnectDiedSignalBackend)
+			admin_notify('Success', '"ConnectDiedSignalBackend" was fired')
 		else
 			local execstr = ""
 			local s,f = pcall(function()
