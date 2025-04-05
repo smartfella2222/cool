@@ -1,6 +1,11 @@
+--[[
 
---army's admin
---@armh2
+	IDK ADMIN
+
+	@armh2
+
+]]
+
 
 --[[
 ServiceFetch
@@ -27,13 +32,33 @@ local cmdbarbackgroundcolor = Color3.fromRGB(28,28,28)
 local player = game.Players.LocalPlayer
 local flying = true
 local characterrig = nil
+local instancefound = false
+
+for i,v in pairs(CoreGui:GetChildren()) do
+	if v:IsA('ScreenGui') and v:GetAttribute('idkactive') == true then
+		v:Destroy()
+		instancefound = true
+	end
+end
 
 local MainContainer = Instance.new("ScreenGui")
 MainContainer.Parent = CoreGui
 MainContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MainContainer:SetAttribute('idkactive', true)
+
+local afullname = "idk admin v0.1"
 
 local warnings = Instance.new("Folder", MainContainer)
 warnings.Name = "Warnings"
+
+local notifmain = Instance.new('Frame', MainContainer)
+notifmain.BackgroundTransparency = 1
+notifmain.Position = UDim2.new(1, -300, 0, 0)
+notifmain.Size = UDim2.new(0, 300, 1, 0)
+local notifuilayout = Instance.new('UIListLayout', notifmain)
+notifuilayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+notifuilayout.SortOrder = Enum.SortOrder.LayoutOrder
+notifuilayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 --[[
 Some Essential Functions
 ]]
@@ -173,7 +198,131 @@ function buildrig(cf, trans)
 	end
 	return holder
 end
+function admin_notify(notif_title, notif_description, notif_length)
+	coroutine.wrap(function()
+		local notifframecontainer = Instance.new('Frame', notifmain)
+	notifframecontainer.BackgroundTransparency = 1.000
+	notifframecontainer.Size = UDim2.new(1, 0, 0, 105)
+	notifframecontainer.Name = notif_title.."_holder"
+	local notif = Instance.new('Frame', notifframecontainer)
+	local openpos = UDim2.new(0.045, 0, 0.05, 0)
+	local closepos = UDim2.new(1, 0, 0.05, 0)
+	notif.BackgroundColor3 = cmdbarbackgroundcolor
+	notif.BackgroundTransparency = 0.25
+	notif.BorderColor3 = Color3.fromRGB(11, 5, 5)
+	notif.BorderSizePixel = 0
+	notif.Position = closepos
+	notif.Size = UDim2.new(0.91, 0, 0.88, 0)
+	notif.ZIndex = 0
+	Instance.new('UICorner', notif).CornerRadius = UDim.new(0,2)
+	local function dismiss()
+		TweenService:Create(notif, TweenInfo.new(0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),{Position = closepos}):Play()
+		game:GetService('Debris'):AddItem(notifframecontainer, 0.25)
+	end
+	local title = Instance.new('TextLabel', notif)
+	title.BackgroundTransparency = 1.000
+	title.Position = UDim2.new(0.033, 0, 0.07, 0)
+	title.Size = UDim2.new(0.967, 0, 0.25, 0)
+	title.Font = Enum.Font.SourceSansBold
+	title.Text = notif_title
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.TextSize = 20
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	local watermark = Instance.new('TextLabel', notif)
+	watermark.BackgroundTransparency = 1
+	watermark.Position = UDim2.new(0.75, 0, 0.0705, 0)
+	watermark.Size = UDim2.new(0.212, 0, 0.25, 0)
+	watermark.Font = Enum.Font.SourceSans
+	watermark.Text = afullname
+	watermark.TextColor3 = Color3.fromRGB(255, 255, 255)
+	watermark.TextSize = 15
+	watermark.TextTransparency = 0.5
+	watermark.TextXAlignment = Enum.TextXAlignment.Right
+	local textdescription = Instance.new('TextLabel', notif)
+	textdescription.BackgroundTransparency = 1.000
+	textdescription.Position = UDim2.new(0.033, 0, 0.317, 0)
+	textdescription.Size = UDim2.new(0.935, 0, 0.6, 0)
+	textdescription.Font = Enum.Font.Nunito
+	textdescription.Text = notif_description
+	textdescription.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textdescription.TextSize = 15
+	textdescription.TextWrapped = true
+	textdescription.TextXAlignment = Enum.TextXAlignment.Left
+	local strokebox = Instance.new('Frame',notif)
+	local strokeboxstroke = Instance.new('UIStroke', strokebox)
+	strokebox.BackgroundTransparency = 1
+	strokebox.Size = UDim2.new(1,0,1,0)
+	strokeboxstroke.Color = Color3.fromRGB(255, 255, 255)
+	strokeboxstroke.Thickness = 1.5
+	strokeboxstroke.Transparency = 0.75
+	local framestroke = Instance.new("UIStroke", notif)
+	framestroke.Color = Color3.fromRGB(0,0,0)
+	framestroke.Thickness = 2
+	framestroke.Transparency = 0.75
+	Instance.new('UICorner', strokebox).CornerRadius = UDim.new(0, 2)
+	local mb1 = Instance.new('TextButton', notif)
+	mb1.ZIndex = 5
+	mb1.BackgroundTransparency = 1
+	mb1.TextTransparency = 1
+	mb1.Size = UDim2.new(1,0,1,0)
+	local function blink()
+		TweenService:Create(notif,TweenInfo.new(
+			0, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+		), {BackgroundColor3 = Color3.fromRGB(200,200,200)}):Play()
+		task.wait()
+		TweenService:Create(notif,TweenInfo.new(
+			0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+		), {BackgroundColor3 = cmdbarbackgroundcolor}):Play()
+	end
+	mb1.MouseEnter:Connect(function()
+		TweenService:Create(notif,TweenInfo.new(
+			0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+		), {BackgroundColor3 = Color3.fromRGB(200,200,200)}):Play()
+	end)
+	mb1.MouseLeave:Connect(function()
+		TweenService:Create(notif,TweenInfo.new(
+			0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out
+		), {BackgroundColor3 = cmdbarbackgroundcolor}):Play()
+	end)
+	mb1.MouseButton1Click:Connect(function()
+		TweenService:Create(notif,TweenInfo.new(
+			0, Enum.EasingStyle.Linear, Enum.EasingDirection.Out
+		), {BackgroundTransparency = 0}):Play()
+		task.wait()
+		TweenService:Create(notif,TweenInfo.new(
+			0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut
+		), {BackgroundTransparency = 0.25}):Play()
+		dismiss()
+	end)
+	if notif_length < 0.5 then
+		notif_length = 0.5
+	end
+	TweenService:Create(notif, TweenInfo.new(0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),{Position = openpos}):Play()
+	task.wait(0.25 + notif_length - 0.5)
+	for i = 0,2,1 do
+		blink()
+		task.wait(0.25)
+	end
+	dismiss()
+	end)()
+end
 task.spawn(randomizename, MainContainer)
+
+local execstr = ""
+local s,f = pcall(function()
+	if identifyexecutor() then
+		execstr = " Using "..tostring(identifyexecutor())
+	end
+end)
+admin_notify('Loaded!', 'Yo '..game.Players.LocalPlayer.Name..', prefix bind is currently set to "'..tostring(prefix.Name)..'". If you have any questions or want to chat; @armh2 on discord.'..execstr, 3.5)
+
+if instancefound == true then
+	admin_notify('Instance closed', 'Another instance of idk admin was found running and was shutdown.', 3.5)
+end
+
+if UserInputService.TouchEnabled == true and UserInputService.KeyboardEnabled == false then
+	admin_notify('Mobile warning', "Looks like you're on mobile... what a bummer, theres likely gonna be some optimization issues because this was built of computers.", 7)
+end
 
 --[[
 Commands
@@ -267,7 +416,8 @@ cmds[fly] = {
 --
 
 function destroy()
-	MainContainer:Destroy()
+	game:GetService('Debris'):AddItem(MainContainer, 3.5)
+	admin_notify('Script killing', 'Script will be killed in 3 seconds.', 3)
 end
 cmds[destroy] = {
 	['Name'] = "killscript",
@@ -290,6 +440,90 @@ cmds[unfly] = {
 	['Args'] = {
 	},
 	['Command'] = unfly
+}
+
+--
+
+function walkspeedc(speed)
+	local s,f = pcall(function()
+		local hum = player.Character:FindFirstChildWhichIsA('Humanoid', true)
+		hum.WalkSpeed = speed
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[walkspeedc] = {
+	['Name'] = "walkspeed",
+	['CommandStyle'] = 2,
+	['Description'] = 'Changes the "WalkSpeed" property of your Humanoid.',
+	['Args'] = {
+		'speed'
+	},
+	['Command'] = walkspeedc
+}
+
+--
+
+function jumppowerc(jpower)
+	local s,f = pcall(function()
+		local hum = player.Character:FindFirstChildWhichIsA('Humanoid', true)
+		hum.JumpPower = jpower
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[jumppowerc] = {
+	['Name'] = "jumppower",
+	['CommandStyle'] = 2,
+	['Description'] = 'Changes the "JumpPower" property of your Humanoid.',
+	['Args'] = {
+		'power'
+	},
+	['Command'] = jumppowerc
+}
+
+--
+
+function gravity(grav)
+	local s,f = pcall(function()
+		workspace.Gravity = grav
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[gravity] = {
+	['Name'] = "gravity",
+	['CommandStyle'] = 2,
+	['Description'] = 'Changes the "Gravity" property of Workspace.',
+	['Args'] = {
+		'gravity'
+	},
+	['Command'] = gravity
+}
+
+--
+
+function reset()
+	local s,f = pcall(function()
+		local hum = player.Character:FindFirstChildWhichIsA('Humanoid', true)
+		player.Character:BreakJoints()
+		hum:ChangeState(15)
+		hum.Health = 0
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[reset] = {
+	['Name'] = "reset",
+	['CommandStyle'] = 2,
+	['Description'] = 'Kills your character.',
+	['Args'] = {
+	},
+	['Command'] = reset
 }
 
 --
@@ -354,12 +588,158 @@ cmds[commands] = {
 
 --
 
+function togglelightbar()
+	local lightbar = MainContainer:FindFirstChild('cmd_lightbar', true)
+	if lightbar then
+		if lightbar.Visible == true then
+			lightbar.Visible = false
+		else
+			lightbar.Visible = true
+		end
+	end
+end
+cmds[togglelightbar] = {
+	['Name'] = "togglelightbar",
+	['CommandStyle'] = 1,
+	['Description'] = "Toggles the light bar on the bottom of the command bar.",
+	['Args'] = {
+	},
+	['Command'] = togglelightbar
+}
+
+local basicplayinganims = {}
+--
+
+function monstermash()
+	local s,f = pcall(function()
+		local char = player.Character
+	local hum = char:FindFirstChildWhichIsA('Humanoid')
+	local anim = Instance.new('Animation')
+	anim.AnimationId = "rbxassetid://35634514"
+	local loadanim = hum:LoadAnimation(anim)
+	table.insert(basicplayinganims, loadanim)
+	loadanim:Play()
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+
+cmds[monstermash] = {
+	['Name'] = "monstermash",
+	['CommandStyle'] = 2,
+	['Description'] = 'Makes you do the Monster Mash, you can stop if via running the "stopanims" command.',
+	['Args'] = {
+	},
+	['Command'] = monstermash
+}
+
+--
+
+function stopanims()
+	local s,f = pcall(function()
+		for i,v in pairs(basicplayinganims) do
+			if v ~= nil then
+				v:Stop()
+			end
+		end
+		basicplayinganims = {}
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[stopanims] = {
+	['Name'] = "stopanims",
+	['CommandStyle'] = 2,
+	['Description'] = "Stops all loadanimations ran by this admin via commands.",
+	['Args'] = {
+	},
+	['Command'] = stopanims
+}
+
+--
+
+function refresh()
+	local s,f = pcall(function()
+		if replicatesignal then
+			local char = player.Character
+			if characterrig ~= nil then
+				char = characterrig
+			end
+			local hum = char:FindFirstChildWhichIsA('Humanoid', true)
+			local hrp = char.PrimaryPart
+			local function check()
+				if not hum then
+					admin_notify('Error', 'Humanoid not found.', 5)
+					return
+				end
+				if not hrp then
+					admin_notify('Error', 'Primary part not found.', 5)
+					return
+				end
+			end
+			check()
+			replicatesignal(player.ConnectDiedSignalBackend)
+			admin_notify('One sec', 'Please wait '..game.Players.RespawnTime..' seconds.', 4.5)
+    		task.wait(game.Players.RespawnTime - .1)
+			check()
+			local storedcd = hrp.CFrame
+    		hum:ChangeState(15)
+			player.Character = nil
+			repeat task.wait() until player.Character ~= nil and player.Character.PrimaryPart ~= nil
+			player.Character.PrimaryPart.CFrame = storedcd
+			admin_notify('Success', 'You have been refreshed.', 1.5)
+		else
+			admin_notify('Error', 'Your executor doesn'.."'"..'t support the "replicatesignal" exploit function.', 5)
+		end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+
+cmds[refresh] = {
+	['Name'] = "refresh",
+	['CommandStyle'] = 2,
+	['Description'] = "Respawns you without making as much as a mess.",
+	['Args'] = {
+	},
+	['Command'] = refresh
+}
+
+--
+
+function sendnotifcmd(ntftitle,ntfdesc, ntflength)
+	admin_notify(ntftitle or 'Nothing', ntfdesc or 'Nothing', tonumber(ntflength) or 3)
+end
+cmds[sendnotifcmd] = {
+	['Name'] = "sendnotif",
+	['CommandStyle'] = 2,
+	['Description'] = "Creates a notification, you can use this to test out the notifications.",
+	['Args'] = {
+		'title',
+		'desc',
+		'length'
+	},
+	['Command'] = sendnotifcmd
+}
+
+--
+
 function reangle()
 	local cord = CFrame.new()
 	if player.Character ~= nil and player.Character:FindFirstChild('HumanoidRootPart') then
 		if characterrig == nil then
 			cord = player.Character.HumanoidRootPart.CFrame
 		else
+			if characterrig:FindFirstChild('Humanoid') then
+				characterrig.Humanoid.Health = 0
+			end
+			task.wait(.1)
+			characterrig:Destroy()
+			characterrig = nil
+			admin_notify('Rig deleted!', 'A existing rig was found and has been deleted.', 3.5)
 			return
 		end
 	else
@@ -442,12 +822,14 @@ cmds[reangle] = {
 if player.Character ~= nil and player.Character:FindFirstChild('Humanoid') then
 	if player.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
 		cmds[reangle]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
+		cmds[monstermash]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
 	end
 end
 
 function goofyanim(stepbase)
 	local rig = player.Character
 	if characterrig == nil then
+		admin_notify('Error', 'The command "angleanim" must be ran first to use this!', 3.5)
 		return
 	end
 	local neck = rig:FindFirstChild('Neck', true)
@@ -569,7 +951,7 @@ local hatnames = {
 for i,v in pairs(hatnames) do
 	--print(v[1])
 	if not char:FindFirstChild(v[1]) then
-		warn('Hat requirements failed.')
+		admin_notify('Error', 'Hat requirements failed.', 3.5)
 		return
 	end
 end
@@ -827,6 +1209,7 @@ function createcommandbar()
 	Frame_3.BorderSizePixel = 0
 	Frame_3.Position = UDim2.new(0, 0, 0.949999988, 0)
 	Frame_3.Size = UDim2.new(1, 0, 0.0500000007, 0)
+	Frame_3.Name = "cmd_lightbar"
 
 	ImageLabel.Parent = Frame_3
 	ImageLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1188,8 +1571,8 @@ function searchquerymain()
 		canvasupdate()
 	end
 
-	cmdinput.FocusLost:Connect(function(ep)
-		if ep == true then
+	cmdinput.FocusLost:Connect(function(enterpressed)
+		if enterpressed == true then
 			for i,v in pairs(cmds) do
 				local args = string.split(cmdinput.Text, " ")
 				if v['Name'] and string.lower(args[1]) == string.lower(v['Name']) and v['Command'] then
@@ -1401,7 +1784,7 @@ function createcmdsui()
 		cmdinfoframe.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 		cmdinfoframe.BackgroundTransparency = 0.75
 		cmdinfoframe.BorderSizePixel = 0
-		cmdinfoframe.Size = UDim2.new(0.975, 0, 0.034, 50)
+		cmdinfoframe.Size = UDim2.new(0.975, 0, 0, 65)
 		cmdinfoframe.Name = cmdname
 		local cmdinfoname = Instance.new('TextLabel', cmdinfoframe)
 		cmdinfoname.BackgroundTransparency = 1
