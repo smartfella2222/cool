@@ -529,6 +529,35 @@ cmds[reset] = {
 
 --
 
+function diedsignal()
+	local s,f = pcall(function()
+		if replicatesignal then
+			replicatesignal(player.ConnectDiedSignalBackend)
+		else
+			local execstr = ""
+			local s,f = pcall(function()
+				if identifyexecutor() then
+					execstr = '"'..tostring(identifyexecutor())..'" '
+				end
+			end)
+			admin_notify('Error', 'Your executor '..execstr..'doesn'.."'"..'t support the "replicatesignal" exploit function.', 5)
+		end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[diedsignal] = {
+	['Name'] = "diedsignal",
+	['CommandStyle'] = 2,
+	['Description'] = 'Fires the "ConnectDiedSignalBackend" signal of your player, which could be used for perma-death and more.',
+	['Args'] = {
+	},
+	['Command'] = diedsignal
+}
+
+--
+
 function offsetui(amount)
 	cmdbarshowpos = cmdbardefaultpos - UDim2.fromOffset(-amount,125)
 	cmdbarhidepos = cmdbardefaultpos + UDim2.fromOffset(amount,50)
@@ -692,7 +721,13 @@ function refresh()
 			player.Character.PrimaryPart.CFrame = storedcd
 			admin_notify('Success', 'You have been refreshed.', 1.5)
 		else
-			admin_notify('Error', 'Your executor doesn'.."'"..'t support the "replicatesignal" exploit function.', 5)
+			local execstr = ""
+			local s,f = pcall(function()
+				if identifyexecutor() then
+					execstr = '"'..tostring(identifyexecutor())..'" '
+				end
+			end)
+			admin_notify('Error', 'Your executor '..execstr..'doesn'.."'"..'t support the "replicatesignal" exploit function.', 5)
 		end
 	end)
 	if f then
