@@ -1,16 +1,18 @@
 --[[
-
 	IDK ADMIN
 
 	@armh2
 
+	my open source admin :)
 ]]
 
 print('Idk Admin ran.')
+local afullname = "idk admin v0.1.1"
 
 --[[
 ServiceFetch
 ]]
+local RunService = game:GetService('RunService')
 local TextService = game:GetService('TextService')
 local TweenService = game:GetService('TweenService')
 local HTTPService = game:GetService('HttpService')
@@ -48,8 +50,6 @@ local MainContainer = Instance.new("ScreenGui")
 MainContainer.Parent = CoreGui
 MainContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainContainer:SetAttribute('idkactive', true)
-
-local afullname = "idk admin v0.1"
 
 local warnings = Instance.new("Folder", MainContainer)
 warnings.Name = "Warnings"
@@ -317,7 +317,7 @@ local s,f = pcall(function()
 		execstr = " Using "..tostring(identifyexecutor())
 	end
 end)
-admin_notify('Loaded!', 'Yo '..game.Players.LocalPlayer.Name..', prefix bind is currently set to "'..tostring(prefix.Name)..'". If you have any questions or want to chat; @armh2 on discord.'..execstr, 3.5)
+admin_notify('Loaded!', 'Yo '..game.Players.LocalPlayer.Name..', prefix bind is currently set to "'..tostring(prefix.Name)..'". If you have any questions or want to chat; @armh2 on discord.'..execstr, 6.5)
 
 if instancefound == true then
 	admin_notify('Instance closed', 'Another instance of idk admin was found running and was shutdown.', 3.5)
@@ -465,6 +465,9 @@ cmds[walkspeedc] = {
 	},
 	['Command'] = walkspeedc
 }
+--
+
+
 --
 
 function rejoin() --ts command was forked from iy cuz i was too lazy to look at teleportservice lol
@@ -790,6 +793,56 @@ cmds[sendnotifcmd] = {
 	['Command'] = sendnotifcmd
 }
 
+
+--
+
+function noclip()
+	local s,f = pcall(function()
+		local function ncfunc()
+			if player.Character ~= nil then
+				for i,a in pairs(player.Character:GetDescendants()) do
+					if a:IsA('BasePart') then
+						a.CanCollide = false
+					end
+				end
+			end
+		end
+		RunService:BindToRenderStep('noclip', Enum.RenderPriority.Camera.Value-1, ncfunc)
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+
+cmds[noclip] = {
+	['Name'] = "noclip",
+	['CommandStyle'] = 2,
+	['Description'] = "Lets you walk through walls.",
+	['Args'] = {
+	},
+	['Command'] = noclip
+}
+
+--
+
+function unnoclip()
+	local s,f = pcall(function()
+		RunService:UnbindFromRenderStep('noclip')
+		if player.Character ~= nil and player.Character:FindFirstChild('HumanoidRootPart') then
+			player.Character.HumanoidRootPart.CanCollide = true
+		end
+	end)
+end
+
+cmds[unnoclip] = {
+	['Name'] = "unnoclip",
+	['CommandStyle'] = 2,
+	['Description'] = 'If the command "noclip" is running, this will stop it.',
+	['Args'] = {
+	},
+	['Command'] = unnoclip
+}
+
 --
 
 function reangle()
@@ -995,165 +1048,6 @@ cmds[goofyanim] = {
 		'bool'
 	},
 	['Command'] = goofyanim
-}
-
---
-
-function hatnpc()
-	local char = game.Players.LocalPlayer.Character
-local hrp = char:WaitForChild('HumanoidRootPart')
-
-local hatnames = {
-	[1] = {"Accessory (Meshes/Mafiaso's Smug Grin)",'Head', CFrame.new(0,0,0)},
-	[2] = {"BlockheadBaseballCap",'Right Arm', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
-	[3] = {"Kate Hair",'Left Arm', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
-	[4] = {"LavanderHair",'Right Leg', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
-	[5] = {"Ramen",'Left Leg', CFrame.new(0,0,0) * CFrame.Angles(math.rad(90),0,0)},
-	[6] = {"Robloxclassicred",'Torso', CFrame.new(0,0.5,0) * CFrame.Angles(0,math.rad(90),0)},
-	[7] = {"Thinking Cap",'Torso', CFrame.new(0,-0.5,0) * CFrame.Angles(0,math.rad(90),0)},
-}
-
-for i,v in pairs(hatnames) do
-	--print(v[1])
-	if not char:FindFirstChild(v[1]) then
-		admin_notify('Error', 'Hat requirements failed.', 3.5)
-		return
-	end
-end
-
-local animids = {
-	[1] = "http://www.roblox.com/asset/?id=180426354",
-	[2] = "http://www.roblox.com/asset/?id=180435571"
-}
-local function animate(hum, hhrp)
-	local runanim = Instance.new('Animation')
-	local idleanim = Instance.new('Animation')
-	runanim.AnimationId = animids[1]
-	idleanim.AnimationId = animids[2]
-
-	local loadrun = hum:LoadAnimation(runanim)
-	local loadidle = hum:LoadAnimation(idleanim)
-	local move = Instance.new('BoolValue')
-
-	move.Changed:Connect(function()
-		if move.Value == true then
-			loadrun:Play()
-			loadrun:AdjustWeight(5)
-		else
-			loadrun:Stop()
-		end
-	end)
-	loadidle:Play()
-	
-	coroutine.wrap(function()
-		while wait() do
-			if hhrp ~= nil and hhrp.Parent ~= nil then
-				if (hhrp.Velocity*Vector3.new(1,0,0)).Magnitude > 1 then
-					move.Value = true
-				else
-					move.Value = false
-				end
-			else
-				break
-			end
-		end
-	end)()
-end
-local rig = buildrig(hrp.CFrame, 1)
-local npchrp = rig:FindFirstChild('HumanoidRootPart')
-local appliedhats = Instance.new('Folder', char)
-appliedhats.Name = "AppliedHats"
-animate(rig:WaitForChild('Humanoid'),npchrp)
-coroutine.wrap(function()
-	while task.wait() do
-		if rig ~= nil then
-			if game.Players.LocalPlayer.Character ~= rig then
-				local s,f = pcall(function()
-					rig:FindFirstChild('Humanoid'):MoveTo(hrp.CFrame * CFrame.new(-3,0,2).Position)
-				end)
-				if f then
-					break
-				end
-			end
-		else
-			break
-		end
-	end
-end)()
-
-local function applyloop(handle, part, off)
-	coroutine.wrap(function()
-		while task.wait() do
-			local s,f = pcall(function()
-				handle.CFrame = part.CFrame * off
-				handle.Parent = appliedhats
-			end)
-			if f then
-				break
-			end
-		end
-	end)()
-end
-
-game:GetService('RunService').Heartbeat:Connect(function()
-	for i,v in pairs(appliedhats:GetDescendants()) do
-		if v:IsA('BasePart') then
-			v.Velocity = Vector3.new(0,650,0)
-		end
-	end
-end)
-
-for i,v in pairs(hatnames) do
-	if char:FindFirstChild(v[1]) then
-		local hat = char:FindFirstChild(v[1])
-		local limb = rig:FindFirstChild(v[2])
-		local offset = v[3]
-		if hat:FindFirstChild('AccessoryWeld', true) then
-			hat:FindFirstChild('AccessoryWeld', true):Destroy()
-		end
-		if hat:FindFirstChild('Mesh', true) and hat.Name ~= hatnames[1][1] then
-			hat:FindFirstChild('Mesh', true):Destroy()
-		end
-		if hat:FindFirstChild('Handle', true) then
-			local handle = hat:FindFirstChild('Handle', true)
-			applyloop(handle, limb, offset)
-		end
-	end
-end
-
-local scriptkilled = false
-
-local function swapchar()
-	if game.Players.LocalPlayer.Character == char then
-		game.Players.LocalPlayer.Character = rig
-		workspace.CurrentCamera.CameraSubject = rig:WaitForChild('Humanoid')
-	else
-		game.Players.LocalPlayer.Character = char
-		workspace.CurrentCamera.CameraSubject = char:WaitForChild('Humanoid')
-	end
-end
-
-char.Humanoid.Died:Connect(function()
-    scriptkilled = true
-    game.Players.LocalPlayer.Character = char
-	workspace.CurrentCamera.CameraSubject = char:WaitForChild('Humanoid')
-	rig:Destroy()
-end)
-
-game:GetService('UserInputService').InputBegan:Connect(function(k)
-	if scriptkilled == false and k.KeyCode == Enum.KeyCode.Period and game:GetService('UserInputService'):GetFocusedTextBox() == nil then
-		swapchar()
-	end
-end)
-end
-cmds[hatnpc] = {
-	['Name'] = "hatnpc",
-	['CommandStyle'] = 2,
-	['Description'] = 'Creates a NPC that follows you around via hats, you can control it via a toggle binded to "." (RCD has to be off).',
-	['Args'] = {
-	},
-	['Warning'] = {workspace:GetFullName(), "If Reject Character Deletions (RCD) is enabled, this command won't be replicated"},
-	['Command'] = hatnpc
 }
 
 
