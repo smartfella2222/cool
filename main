@@ -598,7 +598,7 @@ cmds[unspinfling] = {
 
 --
 
-function flingkill(inpplr)
+function flingkill(inpplr, attemptdur)
 	local s,f = pcall(function()
 		local foundplr = nil
 		for i,v in pairs(Players:GetChildren()) do
@@ -609,13 +609,7 @@ function flingkill(inpplr)
 		if foundplr ~= nil then
 			local rancf = player.Character.HumanoidRootPart.CFrame
 			local tkilled = false
-			if replicatesignal then
-				replicatesignal(player.ConnectDiedSignalBackend)
-				admin_notify('One sec', 'Please wait '..tostring(game.Players.RespawnTime-0.85)..' seconds.', 4.5)
-				task.wait(game.Players.RespawnTime - .85)
-			else
-				admin_notify('Replicatesignal', "Executor doesn't support replicatesignal, instant respawn won't be available", 5)
-			end
+			local secondary = 0
 			coroutine.wrap(function()
 				task.wait(0.05)
 				while task.wait() do
@@ -629,7 +623,6 @@ function flingkill(inpplr)
 					end
 				end
 			end)()
-
 			coroutine.wrap(function()
 				while task.wait() do
 					if tkilled == false then
@@ -639,15 +632,31 @@ function flingkill(inpplr)
 					else break
 					end
 				end
+			end)()   
+			coroutine.wrap(function()
+				while task.wait() do
+					if secondary == 1 then
+						for i,v in pairs(player.Character:GetChildren()) do
+							if v:IsA('BasePart') then
+								game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart', true).CFrame = rancf
+								v.AssemblyLinearVelocity = Vector3.zero
+								v.Velocity = Vector3.zero
+								v.RotVelocity = Vector3.zero --tons of desperate break measures...
+							end
+						end
+					elseif secondary == 2 then
+						break
+					end
+				end
 			end)()    
-			task.wait(0.6)
-			player.Character:BreakJoints()
-			player.Character:WaitForChild('Humanoid'):ChangeState(15)
+			task.wait(attemptdur or 0.5)
 			tkilled = true
-			player.Character = nil
-			repeat task.wait() until game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart', true)
-			game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart', true).CFrame = rancf
-			admin_notify('Complete', "Command completed, if they arn't flung then there might be no collision or the command just bugged.", 4.5)
+			secondary = 1
+			coroutine.wrap(function()
+				task.wait(.1)
+				secondary = 2
+				admin_notify('Complete', "Command completed, if they arn't flung then there might be no collision or the command just bugged.", 4.5)
+			end)()
 		else
 			admin_notify('Error', "Couldn't find a player matching that name, did you type in a display name instead of username?", 5)
 		end
@@ -659,9 +668,10 @@ end
 cmds[flingkill] = {
 	['Name'] = "flingkill",
 	['CommandStyle'] = 2,
-	['Description'] = 'Quickly teleports to the player and flings them.',
+	['Description'] = 'Quickly teleports to the player and flings them. Dur is short for "duration" in seconds of the fling attempt, default is 0.5',
 	['Args'] = {
-		'player'
+		'player',
+		'dur'
 	},
 	['Command'] = flingkill
 }
