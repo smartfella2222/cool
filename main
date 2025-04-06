@@ -297,7 +297,7 @@ function admin_notify(notif_title, notif_description, notif_length)
 		), {BackgroundTransparency = 0.25}):Play()
 		dismiss()
 	end)
-	if notif_length < 0.5 then
+	if tonumber(notif_length) < 0.5 then
 		notif_length = 0.5
 	end
 	TweenService:Create(notif, TweenInfo.new(0.25, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),{Position = openpos}):Play()
@@ -646,6 +646,39 @@ cmds[commands] = {
 	['Args'] = {
 	},
 	['Command'] = commands
+}
+
+--
+
+function tpto(inpplr)
+	local s,f = pcall(function()
+		local foundplr = nil
+	for i,v in pairs(Players:GetChildren()) do
+		if string.match(string.lower(v.Name), string.lower(inpplr)) then
+			foundplr = v
+		end
+	end
+	if foundplr ~= nil then
+		local curhrp = player.Character:FindFirstChild('HumanoidRootPart', true)
+		local plrhrp = foundplr.Character:FindFirstChild('HumanoidRootPart', true)
+		curhrp.CFrame = plrhrp.CFrame * CFrame.new(0,0,1)
+		admin_notify('Success', 'Teleported to '..foundplr.Name..' at '..math.round(plrhrp.Position.X)..', '..math.round(plrhrp.Position.Y)..', '..math.round(plrhrp.Position.Z)..'!', 2.5)
+	else
+		admin_notify('Error', "Couldn't find a player matching that name.", 5)
+	end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[tpto] = {
+	['Name'] = "tpto",
+	['CommandStyle'] = 2,
+	['Description'] = "Teleports you to a player",
+	['Args'] = {
+		'player'
+	},
+	['Command'] = tpto
 }
 
 --
