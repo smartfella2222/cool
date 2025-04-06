@@ -1065,6 +1065,7 @@ function reangle()
 		game.Players.LocalPlayer.Character.Humanoid.Health = 0
 	end
 	game.Players.LocalPlayer.Character = nil
+	admin_notify('One sec', 'A respawn is required for this to work.', 3.5)
 	repeat task.wait() until game.Players.LocalPlayer.Character ~= nil
 	local function checkd(d)
 		if d:IsA('Animator') then
@@ -1099,6 +1100,7 @@ function reangle()
 		char:WaitForChild('Humanoid').Health = 0
 		characterrig = nil
 	end)
+	workspace.CurrentCamera.CameraSubject = characterrig:WaitForChild('Humanoid')
 	wait()
 	local hum = char:WaitForChild('Humanoid')
 	for i,v in pairs(hum:GetPlayingAnimationTracks()) do
@@ -1132,6 +1134,106 @@ cmds[reangle] = {
 	['Command'] = reangle
 }
 
+--
+
+function walkfling()
+	local cord = CFrame.new()
+	if player.Character ~= nil and player.Character:FindFirstChild('HumanoidRootPart') then
+		if characterrig == nil then
+			cord = player.Character.HumanoidRootPart.CFrame
+		else
+			if characterrig:FindFirstChild('Humanoid') then
+				characterrig.Humanoid.Health = 0
+			end
+			task.wait(.1)
+			characterrig:Destroy()
+			characterrig = nil
+			admin_notify('Rig deleted!', 'A existing rig was found and has been deleted.', 3.5)
+			return
+		end
+	else
+		return
+	end
+	local rig = buildrig(cord)
+	game.Players.LocalPlayer.Character:BreakJoints()
+	if game.Players.LocalPlayer.Character:FindFirstChild('Humanoid') then
+		game.Players.LocalPlayer.Character.Humanoid.Health = 0
+	end
+	game.Players.LocalPlayer.Character = nil
+	admin_notify('One sec', 'A respawn is required for this to work.', 3.5)
+	repeat task.wait() until game.Players.LocalPlayer.Character ~= nil
+	local function checkd(d)
+		if d:IsA('Animator') then
+			d:Destroy()
+		elseif d:IsA('LocalScript') then
+			d.Enabled = false
+		end
+	end
+	for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+		checkd(v)
+	end
+	game.Players.LocalPlayer.Character.DescendantAdded:Connect(function(d)
+		checkd(d)
+	end)
+
+	local plr = game.Players.LocalPlayer
+	local char = plr.Character
+	local hrp = char:WaitForChild('HumanoidRootPart')
+
+	if characterrig ~= nil then
+		characterrig:Destroy()
+	end
+	characterrig = char
+	plr.Character = rig
+	if char:FindFirstChild('Animate') then char.Animate:Destroy() end
+	char:WaitForChild('Humanoid').Died:Connect(function()
+		rig:Destroy()
+		characterrig = nil
+	end)
+	rig:WaitForChild('Humanoid').Died:Connect(function()
+		char:BreakJoints()
+		char:WaitForChild('Humanoid').Health = 0
+		characterrig = nil
+	end)
+	workspace.CurrentCamera.CameraSubject = characterrig:WaitForChild('Humanoid')
+	wait()
+	local hum = char:WaitForChild('Humanoid')
+	for i,v in pairs(hum:GetPlayingAnimationTracks()) do
+		v:Stop()
+	end
+	local function sync()
+		local s, f = pcall(function()
+			hrp.CFrame = rig:FindFirstChild('Torso').CFrame
+			for i,v in pairs(rig:GetDescendants()) do
+				if v:IsA('Motor6D') and char:FindFirstChild(v.Name, true) then
+					char:FindFirstChild(v.Name, true).CurrentAngle = v.CurrentAngle
+				end
+			end
+		end)
+		if f then
+			return
+		end
+	end
+	admin_notify('Warning', 'This command is a little unstable, and you might be flung too.', 4.5)
+	game:GetService('RunService').Heartbeat:Connect(function()
+		collisionfix(char) 
+		sync()
+		for i,v in pairs(char:GetChildren()) do
+            if v:IsA('BasePart') then
+                v.AssemblyLinearVelocity = Vector3.new(999999,999999,999999)
+            end
+        end
+	end)
+end
+cmds[walkfling] = {
+	['Name'] = "walkfling",
+	['CommandStyle'] = 2,
+	['Description'] = "Functions similar to angleanim, but limb assembly velocity is set to huge numbers. Angleanim scripts are compatible with this!",
+	['Args'] = {
+	},
+	['Command'] = walkfling
+}
+
 if player.Character ~= nil and player.Character:FindFirstChild('Humanoid') then
 	if player.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
 		cmds[reangle]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
@@ -1157,8 +1259,6 @@ function goofyanim(stepbase)
 		['Running'] = false,
 		['Falling'] = false
 	}
-
-	workspace.CurrentCamera.CameraSubject = rig:WaitForChild('Humanoid')
 
 	rig:FindFirstChild('Humanoid').WalkSpeed = 45
 	rig:FindFirstChild('Humanoid').JumpPower = 75
