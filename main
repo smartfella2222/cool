@@ -7,7 +7,7 @@
 ]]
 
 print('Idk Admin ran.')
-local afullname = "idk admin v0.1.2"
+local afullname = "idk admin v0.1.1"
 
 --[[
 ServiceFetch
@@ -457,7 +457,7 @@ function walkspeedc(speed)
 	end
 end
 cmds[walkspeedc] = {
-	['Name'] = "walkspeed",
+	['Name'] = {"walkspeed", "speed", "ws"},
 	['CommandStyle'] = 2,
 	['Description'] = 'Changes the "WalkSpeed" property of your Humanoid.',
 	['Args'] = {
@@ -531,7 +531,7 @@ function spinfling()
 	end
 end
 cmds[spinfling] = {
-	['Name'] = "spinfling",
+	['Name'] = {"spinfling", "spinf"},
 	['CommandStyle'] = 2,
 	['Description'] = "Makes your character spin super fast, flinging people you come into contact with. DON'T USE SHIFTLOCK",
 	['Args'] = {
@@ -559,7 +559,7 @@ function unspinfling()
 	end
 end
 cmds[unspinfling] = {
-	['Name'] = "unspinfling",
+	['Name'] = "unspinfling", {"unspinf"},
 	['CommandStyle'] = 2,
 	['Description'] = 'If you ran the "spinfling" command, this will stop it.',
 	['Args'] = {
@@ -649,7 +649,7 @@ function gravity(grav)
 	end
 end
 cmds[gravity] = {
-	['Name'] = "gravity",
+	['Name'] = {"gravity", "grav"},
 	['CommandStyle'] = 2,
 	['Description'] = 'Changes the "Gravity" property of Workspace.',
 	['Args'] = {
@@ -743,7 +743,7 @@ function execute(inpscript)
 	loadstring(inpscript)()
 end
 cmds[execute] = {
-	['Name'] = "execute",
+	['Name'] = {"execute", "exec"},
 	['CommandStyle'] = 2,
 	['Description'] = 'Executes a LuaU script as the argument via loadstring - (Only use this for short scripts).',
 	['Args'] = {
@@ -758,7 +758,7 @@ function devconsole()
 	StarterGui:SetCore("DevConsoleVisible", true)
 end
 cmds[devconsole] = {
-	['Name'] = "devconsole",
+	['Name'] = {"devconsole", "console"},
 	['CommandStyle'] = 1,
 	['Description'] = 'Shows the developer console, also accessible via the keyboard shortcut "F9" or typing "/console" in chat.',
 	['Args'] = {
@@ -773,7 +773,7 @@ function commands()
 	createcmdsui()
 end
 cmds[commands] = {
-	['Name'] = "commands",
+	['Name'] = {"commands", "cmds"},
 	['CommandStyle'] = 1,
 	['Description'] = "Shows a prompt of all available commands, (this prompt)",
 	['Args'] = {
@@ -805,7 +805,7 @@ function tpto(inpplr)
 	end
 end
 cmds[tpto] = {
-	['Name'] = "tpto",
+	['Name'] = {"tpto", "to"},
 	['CommandStyle'] = 2,
 	['Description'] = "Teleports you to a player",
 	['Args'] = {
@@ -934,7 +934,7 @@ function refresh()
 end
 
 cmds[refresh] = {
-	['Name'] = "refresh",
+	['Name'] = {"refresh", "re"},
 	['CommandStyle'] = 2,
 	['Description'] = "Respawns you without making as much as a mess.",
 	['Args'] = {
@@ -982,7 +982,7 @@ function noclip()
 end
 
 cmds[noclip] = {
-	['Name'] = "noclip",
+	['Name'] = {"noclip", "clip"},
 	['CommandStyle'] = 2,
 	['Description'] = "Lets you walk through walls.",
 	['Args'] = {
@@ -1700,10 +1700,22 @@ function searchquerymain()
 
 	cmdinput.FocusLost:Connect(function(enterpressed)
 		if enterpressed == true then
-			for i,v in pairs(cmds) do
+			local function checkvalid(v,inpname)
 				local args = string.split(cmdinput.Text, " ")
-				if v['Name'] and string.lower(args[1]) == string.lower(v['Name']) and v['Command'] then
+				if string.lower(args[1]) == string.lower(inpname) and v['Command'] then
 					task.spawn(v['Command'],args[2],args[3], args[4])
+					return
+				end
+			end
+			for i,v in pairs(cmds) do
+				if v['Name'] then
+					if typeof(v['Name']) == "string" then
+						checkvalid(v,v['Name'])
+					else
+						for ind = 1, #v['Name'] do
+							checkvalid(v, v['Name'][ind])
+						end
+					end
 				end
 			end
 		end
@@ -1732,30 +1744,42 @@ function searchquerymain()
 		end
 	end)
 
+
+	local function suggestmain(v, inpname)
+		if inpname and string.match(string.lower(inpname), string.lower(string.split(cmdinput.Text, " ")[1])) then
+			local slotreserved = nil
+			if queryslots[1] == nil then
+				queryslots[1] = true
+				slotreserved = 1
+			elseif  queryslots[2] == nil then
+				queryslots[2] = true
+				slotreserved = 2
+			elseif  queryslots[3] == nil then
+				queryslots[3] = true
+				slotreserved = 3
+			end
+			if slotreserved ~= nil then
+				local argtable = v['Args']
+				local warning = nil
+				if v['Warning'] then
+					warning = v['Warning']
+				end
+				createsuggestion(inpname, argtable[1], argtable[2], argtable[3], v['CommandStyle'], slotreserved, warning)
+			else
+				return
+			end
+		end
+	end
 	cmdinput:GetPropertyChangedSignal('Text'):Connect(function()
 		refreshcanvas()
 		for i,v in pairs(cmds) do
-			if v['Name'] and string.match(string.lower(v['Name']), string.lower(string.split(cmdinput.Text, " ")[1])) then
-				local slotreserved = nil
-				if queryslots[1] == nil then
-					queryslots[1] = true
-					slotreserved = 1
-				elseif  queryslots[2] == nil then
-					queryslots[2] = true
-					slotreserved = 2
-				elseif  queryslots[3] == nil then
-					queryslots[3] = true
-					slotreserved = 3
-				end
-				if slotreserved ~= nil then
-					local argtable = v['Args']
-					local warning = nil
-					if v['Warning'] then
-						warning = v['Warning']
-					end
-					createsuggestion(v['Name'], argtable[1], argtable[2], argtable[3], v['CommandStyle'], slotreserved, warning)
+			if v['Name'] then
+				if typeof(v['Name']) == "string" then
+					suggestmain(v, v['Name'])
 				else
-					return
+					for ind = 1, #v['Name'] do
+						suggestmain(v, v['Name'][ind])
+					end
 				end
 			end
 		end
@@ -1906,7 +1930,7 @@ function createcmdsui()
 	-- searchglass.Size = UDim2.new(0.26, 0, 1.33, 0)
 	-- searchglass.Image = "rbxassetid://96060641709608"
 	-- searchglass.ScaleType = Enum.ScaleType.Fit
-	local function addcmd(cmdname, cmddescription, cmdargs, warning)
+	local function addcmd(cmdname, paste, cmddescription, cmdargs, warning)
 		local cmdinfoframe = Instance.new('Frame', cmdlist)
 		cmdinfoframe.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 		cmdinfoframe.BackgroundTransparency = 0.75
@@ -2001,7 +2025,7 @@ function createcmdsui()
 		end)
 		txtbutton.MouseButton1Click:Connect(function()
 			if cmdinput:IsFocused() == false then
-				cmdinput.Text = cmdname
+				cmdinput.Text = paste
 				appearence(true)
 			end
 			TweenService:Create(cmdinfoframe,TweenInfo.new(
@@ -2015,7 +2039,23 @@ function createcmdsui()
 	end
 	for i,v in pairs(cmds) do
 		if v['Name'] and v['Args'] and v['Description'] then
-			addcmd(v['Name'], v['Description'], v['Args'], v['Warning'])
+			local nameconv = typeof(v['Name'])
+			local vname = ""
+			local paste = ""
+			if nameconv == 'string' then
+				vname = v['Name']
+				paste = vname
+			else
+				paste = v['Name'][1]
+				for ind = 1, #v['Name'] do
+					local endstr = ", "
+					if ind == #v['Name'] then
+						endstr = ""
+					end
+					vname = vname..tostring(v['Name'][ind])..endstr
+				end
+			end
+			addcmd(vname, paste, v['Description'], v['Args'], v['Warning'])
 		end
 	end
 end
