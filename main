@@ -1643,7 +1643,7 @@ function createcommandbar()
 		end
 
 		TweenService:Create(CMDCaret,
-			TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 			{Position = UDim2.fromScale(Scale, 0.15)}
 		):Play()
 		CmdCopy.Text = CMDINP.Text
