@@ -7,7 +7,8 @@
 ]]
 
 print('Idk Admin ran.')
-local afullname = "idk admin v0.1.1"
+local idkadminversion = "v0.1.1"
+local afullname = "idk admin "..idkadminversion
 
 --[[
 ServiceFetch
@@ -443,6 +444,32 @@ cmds[unfly] = {
 	['Args'] = {
 	},
 	['Command'] = unfly
+}
+
+--
+
+function prefixkey(bind)
+	local newbind = nil
+	for i, v in Enum.KeyCode:GetEnumItems() do
+		if v.Value == string.byte(string.lower(bind)) then
+			newbind = v
+		end
+	end
+	if newbind == nil then
+		admin_notify('Error', 'A keystoke for "'..bind..'" wasn'.."'"..'t found.', 4)
+	else
+		admin_notify('Success', 'The command bar prefix has been changed to "'..bind..'"!', 6)
+		prefix = newbind
+	end
+end
+cmds[prefixkey] = {
+	['Name'] = "prefix",
+	['CommandStyle'] = 2,
+	['Description'] = "Changes the prefix key for pulling up the command bar.",
+	['Args'] = {
+		'bind'
+	},
+	['Command'] = prefixkey
 }
 
 --
