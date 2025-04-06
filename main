@@ -587,7 +587,7 @@ function unspinfling()
 end
 cmds[unspinfling] = {
 	['Name'] = "unspinfling", {"unspinf"},
-	['CommandStyle'] = 2,
+	['CommandStyle'] = 3,
 	['Description'] = 'If you ran the "spinfling" command, this will stop it.',
 	['Args'] = {
 	},
@@ -1031,7 +1031,7 @@ end
 
 cmds[unnoclip] = {
 	['Name'] = {"unnoclip", "clip"},
-	['CommandStyle'] = 2,
+	['CommandStyle'] = 3,
 	['Description'] = 'If the command "noclip" is running, this will stop it.',
 	['Args'] = {
 	},
