@@ -1009,7 +1009,7 @@ function noclip()
 end
 
 cmds[noclip] = {
-	['Name'] = {"noclip", "clip"},
+	['Name'] = "noclip",
 	['CommandStyle'] = 2,
 	['Description'] = "Lets you walk through walls.",
 	['Args'] = {
@@ -1030,7 +1030,7 @@ function unnoclip()
 end
 
 cmds[unnoclip] = {
-	['Name'] = "unnoclip",
+	['Name'] = {"unnoclip", "clip"},
 	['CommandStyle'] = 2,
 	['Description'] = 'If the command "noclip" is running, this will stop it.',
 	['Args'] = {
