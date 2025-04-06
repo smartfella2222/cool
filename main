@@ -1019,6 +1019,59 @@ cmds[noclip] = {
 	['Command'] = noclip
 }
 
+
+--
+
+function antifling()
+	local s,f = pcall(function()
+		local function antif()
+			for i,v in pairs(Players:GetChildren()) do if v.Character and v ~= player then -- put it up here to avoid OMEGA nest look
+					for i,a in pairs(v.Character:GetDescendants()) do if a:IsA('BasePart') then -- same here lol
+						a.CanCollide = false
+						--a.AssemblyLinearVelocity = Vector3.new(0,0,0) --shi dont work :(
+					end
+					end
+				end
+			end
+		end
+		RunService:BindToRenderStep('antifling', Enum.RenderPriority.Camera.Value-1, antif)
+		admin_notify('Anti-fling active', 'Anti-fling was binded to renderstep and is active.', 2.5)
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+
+cmds[antifling] = {
+	['Name'] = {"antifling", "antif"},
+	['CommandStyle'] = 2,
+	['Description'] = "Prevents dumbass skidsploiters flinging you. (yes I wrote this as im being flung by one)", -- :)
+	['Args'] = {
+	},
+	['Command'] = antifling
+}
+
+--
+
+function unantifling()
+	local s,f = pcall(function()
+		RunService:UnbindFromRenderStep('antifling')
+		admin_notify('Anti-fling disabled', 'Anti-fling was unbinded from renderstep and is deactivated.', 2.5)
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+
+cmds[unantifling] = {
+	['Name'] = {"unantifling", "unantif"},
+	['CommandStyle'] = 3,
+	['Description'] = 'If the command "antifling" was ran, this will stop it.',
+	['Args'] = {
+	},
+	['Command'] = unantifling
+}
+
 --
 
 function unnoclip()
@@ -1842,7 +1895,7 @@ function searchquerymain()
 						checkvalid(v,v['Name'])
 					else
 						for ind = 1, #v['Name'] do
-							checkvalid(v, v['Name'][ind])
+							checkvalid(v, v['Name'][ind]) --nesting my way outta ts one
 						end
 					end
 				end
@@ -1886,7 +1939,7 @@ function searchquerymain()
 			elseif  queryslots[3] == nil then
 				queryslots[3] = true
 				slotreserved = 3
-			end
+			end --this is slop yes ik
 			if slotreserved ~= nil then
 				local argtable = v['Args']
 				local warning = nil
