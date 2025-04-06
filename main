@@ -4,11 +4,13 @@
 	@armh2
 
 	my open source admin :)
+	please gatekeep >:( ... probably
 ]]
 
-print('Idk Admin ran.')
+
 local idkadminversion = "v0.1.1"
 local afullname = "idk admin "..idkadminversion
+print('Idk Admin ran. '..idkadminversion)
 
 --[[
 ServiceFetch
