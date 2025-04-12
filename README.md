@@ -18,7 +18,7 @@ If you would like to add a command, heres the template:
 function testcmd()
   print('command ran!')
 end
-cmds[execute] = {
+cmds[testcmd] = { --Make sure the insides of "cmds" is the command function
   ['Name'] = {"execute", "exec"}, --Commands can have multiple names
   ['CommandStyle'] = 2, --Icon for the script, 1 = GUI, 2 = Script, 3 = Break script; e.g. unfly
   ['Description'] = 'This is a cool test command!',
@@ -56,7 +56,7 @@ function testcmd(arg, arg2) -- two args for the command
   print(arg)
   print(arg2)
 end
-cmds[execute] = {
+cmds[testcmd] = {
   ['Name'] = {"execute", "exec"}, --Commands can have multiple names
   ['CommandStyle'] = 2, --Icon for the script, 1 = GUI, 2 = Script, 3 = Break script; e.g. unfly
   ['Description'] = 'This is a cool test command!',
