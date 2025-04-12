@@ -19,7 +19,7 @@ function testcmd()
   print('command ran!')
 end
 cmds[testcmd] = { --Make sure the insides of "cmds" is the command function
-  ['Name'] = {"test1", "test2"}, --Commands can have multiple names
+  ['Name'] = {"test1", "test2"}, --Commands can have multiple names, specifically for abbreviations.
   ['CommandStyle'] = 2, --Icon for the script, 1 = GUI, 2 = Script, 3 = Break script; e.g. unfly
   ['Description'] = 'This is a cool test command!',
   ['Args'] = {} --MORE ON ARGUMENTS BELOW IF YOU NEED INSIGHT ON THEM
