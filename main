@@ -320,7 +320,7 @@ local s,f = pcall(function()
 		execstr = " Using "..tostring(identifyexecutor())
 	end
 end)
-admin_notify('Loaded!', 'Yo '..game.Players.LocalPlayer.Name..', prefix bind is currently set to "'..tostring(prefix.Name)..'". If you have any questions or want to chat; @armh2 on discord.'..execstr, 6.5)
+admin_notify('Loaded!', 'Yo '..game.Players.LocalPlayer.Name..', prefix bind is currently set to "'..tostring(prefix.Name)..'". If you have any questions or want to chat; @armh2 on discord.'..execstr, 10)
 
 if instancefound == true then
 	admin_notify('Instance closed', 'Another instance of idk admin was found running and was shutdown.', 3.5)
@@ -877,7 +877,7 @@ cmds[togglelightbar] = {
 local basicplayinganims = {}
 --
 
-function monstermash()
+function monstermash(speedarg)
 	local s,f = pcall(function()
 		local char = player.Character
 		local hum = char:FindFirstChildWhichIsA('Humanoid')
@@ -886,6 +886,7 @@ function monstermash()
 		local loadanim = hum:LoadAnimation(anim)
 		table.insert(basicplayinganims, loadanim)
 		loadanim:Play()
+		loadanim:AdjustSpeed(speedarg or 1)
 	end)
 	if f then
 		admin_notify('Error', tostring(f), 5)
@@ -893,10 +894,11 @@ function monstermash()
 end
 
 cmds[monstermash] = {
-	['Name'] = "monstermash",
+	['Name'] = {"monsmash", "mmash"},
 	['CommandStyle'] = 2,
 	['Description'] = 'Makes you do the Monster Mash, you can stop if via running the "stopanims" command.',
 	['Args'] = {
+		'speed'
 	},
 	['Command'] = monstermash
 }
