@@ -1,6 +1,7 @@
 # IDK ADMIN
 
-This is my open source admin, change all you need! :)
+Hope somebody else hasn't taken this name..
+this is my open source admin, change all you need! :)
 
 *I'll update this sometimes, and maybe add some more customization via the admin and source*
 
@@ -22,7 +23,7 @@ cmds[testcmd] = { --Make sure the insides of "cmds" is the command function
   ['Name'] = {"test1", "test2"}, --Commands can have multiple names, specifically for abbreviations.
   ['CommandStyle'] = 2, --Icon for the script, 1 = GUI, 2 = Script, 3 = Break script; e.g. unfly
   ['Description'] = 'This is a cool test command!',
-  ['Args'] = {} --MORE ON ARGUMENTS BELOW IF YOU NEED INSIGHT ON THEM
+  ['Args'] = {}, --MORE ON ARGUMENTS BELOW IF YOU NEED INSIGHT ON THEM
   ['Command'] = testcmd --Make sure this is the command function!
 }
 ```
@@ -63,7 +64,7 @@ cmds[testcmd] = {
   ['Args'] = {
       'arg1',
       'arg2' -- relating two args needed here
-  }
+  },
   ['Command'] = testcmd
 }
 ```
