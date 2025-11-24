@@ -1906,7 +1906,7 @@ function searchquerymain()
 						checkvalid(v,v['Name'])
 					else
 						for ind = 1, #v['Name'] do
-							checkvalid(v, v['Name'][ind]) --nesting my way outta ts one
+							checkvalid(v, v['Name'][ind]) --holy fucking nest retard
 						end
 					end
 				end
