@@ -7,7 +7,7 @@
 ]]
 
 
-local idkadminversion = "v0.1.1"
+local idkadminversion = "v0.1.2"
 local afullname = "idk admin "..idkadminversion
 print('Idk Admin ran. '..idkadminversion)
 
@@ -40,6 +40,7 @@ local player = game.Players.LocalPlayer
 local flying = true
 local characterrig = nil
 local instancefound = false
+local previouspoint = nil
 
 for i,v in pairs(CoreGui:GetChildren()) do
 	if v:IsA('ScreenGui') and v:GetAttribute('idkactive') == true then
@@ -552,7 +553,7 @@ function spinfling()
 		bav.AngularVelocity = Vector3.new(0,99999,0)
 		bav.MaxTorque = Vector3.new(0,math.huge,0)
 		bav.P = math.huge
-		admin_notify('Success', 'Spingfling created. SHIFTLOCK AT YOUR OWN RISK CUZ U MIGHT GET FLUNG LOL', 3.75)
+		admin_notify('Success', 'Spinfling created. SHIFTLOCK AT YOUR OWN RISK CUZ U MIGHT GET FLUNG LOL', 3.75)
 	end)
 	if f then
 		admin_notify('Error', tostring(f), 5)
@@ -829,13 +830,20 @@ function tpto(inpplr)
 				foundplr = v
 			end
 		end
+        if foundplr == nil then
+            for i,v in pairs(Players:GetChildren()) do
+                if string.match(string.lower(v.DisplayName), string.lower(inpplr)) then
+                    foundplr = v
+                end
+            end
+        end
 		if foundplr ~= nil then
 			local curhrp = player.Character:FindFirstChild('HumanoidRootPart', true)
 			local plrhrp = foundplr.Character:FindFirstChild('HumanoidRootPart', true)
 			curhrp.CFrame = plrhrp.CFrame * CFrame.new(0,0,1)
 			admin_notify('Success', 'Teleported to '..foundplr.Name..' at '..math.round(plrhrp.Position.X)..', '..math.round(plrhrp.Position.Y)..', '..math.round(plrhrp.Position.Z)..'!', 2.5)
 		else
-			admin_notify('Error', "Couldn't find a player matching that name, did you type in a display name instead of username?", 5)
+			admin_notify('Error', "Couldn't find a player matching that name...", 5)
 		end
 	end)
 	if f then
@@ -850,6 +858,67 @@ cmds[tpto] = {
 		'player'
 	},
 	['Command'] = tpto
+}
+
+
+--
+
+function view(inpplr)
+	local s,f = pcall(function()
+		local foundplr = nil
+		for i,v in pairs(Players:GetChildren()) do
+			if string.match(string.lower(v.Name), string.lower(inpplr)) then
+				foundplr = v
+			end
+		end
+        if foundplr == nil then
+            for i,v in pairs(Players:GetChildren()) do
+                if string.match(string.lower(v.DisplayName), string.lower(inpplr)) then
+                    foundplr = v
+                end
+            end
+        end
+		if foundplr ~= nil then
+			local plrhum = foundplr.Character:FindFirstChild('Humanoid', true)
+            workspace.CurrentCamera.CameraSubject = plrhum
+			admin_notify('Success', 'Currently spectating '..foundplr.Name..'!', 2.5)
+		else
+			admin_notify('Error', "Couldn't find a player matching that name...", 5)
+		end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[view] = {
+	['Name'] = {"view", "watch"},
+	['CommandStyle'] = 2,
+	['Description'] = "Spectates a player.",
+	['Args'] = {
+		'player'
+	},
+	['Command'] = view
+}
+
+--
+
+function unview()
+	local s,f = pcall(function()
+		local plrhum = player.Character:FindFirstChild('Humanoid', true)
+        workspace.CurrentCamera.CameraSubject = plrhum
+		admin_notify('Success', "Stopped spectating.", 5)
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[unview] = {
+	['Name'] = {"unview", "unwatch"},
+	['CommandStyle'] = 3,
+	['Description'] = "Stops spectating a player.",
+	['Args'] = {
+	},
+	['Command'] = unview
 }
 
 --
@@ -1056,7 +1125,7 @@ end
 cmds[antifling] = {
 	['Name'] = {"antifling", "antif"},
 	['CommandStyle'] = 2,
-	['Description'] = "Prevents dumbass skidsploiters flinging you. (yes I wrote this as im being flung by one)", -- :)
+	['Description'] = "Fuck those guys.", -- :)
 	['Args'] = {
 	},
 	['Command'] = antifling
