@@ -4,10 +4,13 @@
 	@_pshiz
 
 	my open source admin :)
+
+	For anyone examining this script, i am aware it is indeed a bit sloppy.
+	It was made some time ago, and i've since gotten better, I SWEAR.
 ]]
 
 
-local idkadminversion = "v0.1.2"
+local idkadminversion = "v0.1.3"
 local afullname = "idk admin "..idkadminversion
 print('Idk Admin ran. '..idkadminversion)
 
@@ -24,6 +27,7 @@ local StarterGui = game:GetService('StarterGui')
 local VRService = game:GetService('VRService')
 local TeleportService = game:GetService('TeleportService')
 local Players = game:GetService('Players')
+local MarketplaceService = game:GetService("MarketplaceService")
 
 
 --[[
@@ -37,10 +41,12 @@ local cmdbarhidepos = cmdbardefaultpos + UDim2.fromOffset(0,50)
 local cmdtabinprogress = false
 local cmdbarbackgroundcolor = Color3.fromRGB(28,28,28)
 local player = game.Players.LocalPlayer
-local flying = true
+local flying = false
 local characterrig = nil
 local instancefound = false
+local flyspeed = nil
 local previouspoint = nil
+local ndsfd = nil
 
 for i,v in pairs(CoreGui:GetChildren()) do
 	if v:IsA('ScreenGui') and v:GetAttribute('idkactive') == true then
@@ -339,14 +345,20 @@ local cmds = {}
 
 function fly(speed)
 	local char = player.Character
+	if tonumber(speed) == nil then
+		flyspeed = 15
+	else
+		flyspeed = tonumber(speed)
+	end
+	if flying ~= true then
+		admin_notify('Flight', 'You are now flying at '..tostring(flyspeed)..' speed!', 3)
+	else
+		admin_notify('Flight', 'Flying speed changed to '..tostring(flyspeed)..'.', 3)
+	end
 	flying = true
 
 	local hrp = char:WaitForChild('HumanoidRootPart')
 	local hum = char:WaitForChild('Humanoid')
-
-	if tonumber(speed) == nil then
-		speed = 15
-	end
 
 	local bodypos = Instance.new('BodyPosition', hrp)
 	bodypos.D = 770
@@ -391,11 +403,11 @@ function fly(speed)
 		if flying == true then
 			local s,f = pcall(function()
 				hum.PlatformStand = true
-				bodygyro.CFrame = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesYXZ(workspace.CurrentCamera.CFrame:ToEulerAnglesYXZ()) * CFrame.Angles(math.rad(directionals['Z']*speed),0,math.rad(-directionals['X']*speed/1.25))
+				bodygyro.CFrame = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesYXZ(workspace.CurrentCamera.CFrame:ToEulerAnglesYXZ()) * CFrame.Angles(math.rad(directionals['Z']*flyspeed),0,math.rad(-directionals['X']*flyspeed/1.25))
 				bodypos.Position = CFrame.new(hrp.Position) * CFrame.fromEulerAnglesYXZ(workspace.CurrentCamera.CFrame:ToEulerAnglesYXZ()) * CFrame.new(
-					directionals['X']*speed,    
-					directionals['Y']*speed,
-					directionals['Z']*speed  
+					directionals['X']*flyspeed,    
+					directionals['Y']*flyspeed,
+					directionals['Z']*flyspeed  
 				).Position
 			end)
 			if f then
@@ -437,6 +449,9 @@ cmds[destroy] = {
 --
 
 function unfly()
+	if flying == true then
+		admin_notify('Flight', 'You are no longer flying.', 3)
+	end
 	flying = false
 end
 cmds[unfly] = {
@@ -588,12 +603,50 @@ function unspinfling()
 	end
 end
 cmds[unspinfling] = {
-	['Name'] = "unspinfling", {"unspinf"},
+	['Name'] = {"unspinfling", "unspinf"},
 	['CommandStyle'] = 3,
 	['Description'] = 'If you ran the "spinfling" command, this will stop it.',
 	['Args'] = {
 	},
 	['Command'] = unspinfling
+}
+
+--
+
+function ndsfalldamage()
+	local s,f = pcall(function()
+		local rs = game:GetService('RunService')
+		if ndsfd ~= nil then
+			ndsfd:Disconnect()
+			ndsfd = nil
+			admin_notify('Success', 'Fall damage is toggled on.', 2.5)
+		else
+			ndsfd = rs.Heartbeat:Connect(function()
+				local char = game.Players.LocalPlayer.Character
+				local hrp = char:FindFirstChild('HumanoidRootPart')
+				if not hrp then
+					return
+				end
+				local vel = hrp.AssemblyLinearVelocity
+				hrp.AssemblyLinearVelocity = Vector3.zero
+				rs.RenderStepped:Wait()
+				hrp.AssemblyLinearVelocity = vel
+			end)
+			admin_notify('Success', 'Fall damage is toggled off.', 2.5)
+		end
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[ndsfalldamage] = {
+	['Name'] = {"nofd", "nofalldamage"},
+	['CommandStyle'] = 2,
+	['Description'] = 'Built for Natural Disaster Survival, this command stops all fall damage. (Toggable)',
+	['Args'] = {
+	},
+	['Command'] = ndsfalldamage,
+	['Places'] = {'189707'}
 }
 
 --
@@ -1522,7 +1575,7 @@ function createproblemswindow(container, path, cmderror)
 	pathtxt.Position = UDim2.new(-0.224, 0,-0.357, 0)
 	pathtxt.BackgroundTransparency = 0.25
 	pathtxt.BackgroundColor3 = Color3.fromRGB(0,0,0)
-	coroutine.wrap(function()
+	task.spawn(function()
 		while task.wait() do
 			if problemwindow ~= nil then
 				local ml = UserInputService:GetMouseLocation()
@@ -1531,7 +1584,45 @@ function createproblemswindow(container, path, cmderror)
 				break
 			end
 		end
-	end)()
+	end)
+	return problemwindow
+end
+
+function createplacewindow(container)
+	local problemwindow = Instance.new('Frame', container)
+	problemwindow.Visible = false
+	problemwindow.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	problemwindow.BackgroundTransparency = 0.25
+	problemwindow.ZIndex = 10
+	problemwindow.Size = UDim2.new(0, 170,0, 100)
+	local issuetitle = Instance.new('TextLabel', problemwindow)
+	local success, info = pcall(MarketplaceService.GetProductInfo, MarketplaceService, game.PlaceId)
+	issuetitle.Text = "Exclusive command!"
+	issuetitle.Font = Enum.Font.SourceSansBold
+	issuetitle.TextColor3 = Color3.fromRGB(255,255,255)
+	issuetitle.TextSize = 14
+	issuetitle.Size = UDim2.new(1, 0,0.15, 0)
+	issuetitle.BackgroundTransparency = 1
+	local issue = Instance.new('TextLabel', problemwindow)
+	issue.Text = 'This command was built for '..tostring(info['Name']).."!"
+	issue.TextWrapped = true
+	issue.Font = Enum.Font.Jura
+	issue.FontFace.Bold = true
+	issue.TextColor3 = Color3.fromRGB(255,255,255)
+	issue.TextSize = 14
+	issue.Size = UDim2.new(0.95, 0,0.712, 0)
+	issue.Position = UDim2.new(0.025, 0,0.2, 0)
+	issue.BackgroundTransparency = 1
+	task.spawn(function()
+		while task.wait() do
+			if problemwindow ~= nil then
+				local ml = UserInputService:GetMouseLocation()
+				problemwindow.Position = UDim2.fromOffset(ml.X-175, ml.Y-125)
+			else
+				break
+			end
+		end
+	end)
 	return problemwindow
 end
 
@@ -1802,7 +1893,7 @@ function searchquerymain()
 		[3] = false
 	}
 
-	local function createsuggestion(commandname, arg1, arg2, arg3, commandstyle, slot, warning)
+	local function createsuggestion(commandname, arg1, arg2, arg3, commandstyle, slot, warning, placenotifier)
 		local slotcords = {
 			[1] = 0.75,
 			[2] = 0.5,
@@ -1931,8 +2022,45 @@ function searchquerymain()
 				warn:Destroy()
 			end)
 		end
+		local function createplace()
+			local placenotifholder = Instance.new('ImageLabel', frame)
+			placenotifholder.BackgroundColor3 = Color3.fromRGB(0,0,0)
+			placenotifholder.BackgroundTransparency = 0.5
+			placenotifholder.Position = UDim2.new(-0.045, 0,-0.1, 0)
+			placenotifholder.Size = UDim2.new(0.1, 0,0.585, 0)
+			placenotifholder.Image = "http://www.roblox.com/asset/?id=6727312009"
+			placenotifholder.ImageColor3 = Color3.fromRGB(255,255,255)
+			placenotifholder.ScaleType = Enum.ScaleType.Fit
+			Instance.new('UICorner', placenotifholder).CornerRadius = UDim.new(0,2)
+			local placestroke = Instance.new('UIStroke', placenotifholder)
+			placestroke.Color = Color3.fromRGB(0,0,0)
+			placestroke.Thickness = 2.25
+			placestroke.Transparency = 0.75
+			local placebox = Instance.new('Frame',placenotifholder)
+			placebox.BackgroundTransparency = 1
+			placebox.Size = UDim2.new(1,0,1,0)
+			local placeboxstroke = Instance.new('UIStroke', placebox)
+			Instance.new('UICorner', placebox).CornerRadius = UDim.new(0,2)
+			placeboxstroke.Color = Color3.fromRGB(255, 255, 255)
+			placeboxstroke.Thickness = 1.5
+			placeboxstroke.Transparency = 0.75
+			local place = createplacewindow(warnings)
+			place.Name = "CommandPlaceNotifier"
+			placebox.MouseEnter:Connect(function()
+				place.Visible = true
+			end)
+			placebox.MouseLeave:Connect(function()
+				place.Visible = false
+			end)
+			frame.Destroying:Connect(function()
+				place:Destroy()
+			end)
+		end
 		if warning ~= nil then
 			createwarning()
+		end
+		if placenotifier ~= nil then
+			createplace()
 		end
 	end
 	local function canvasupdate()
@@ -1970,12 +2098,30 @@ function searchquerymain()
 				end
 			end
 			for i,v in pairs(cmds) do
-				if v['Name'] then
+				local function placecheck()
+					local places = v['Places']
+					local canuse = false
+					if places then
+						for _,a in pairs(places) do
+							if tonumber(a) == game.PlaceId then
+								canuse = true
+							end
+						end
+					else
+						return nil
+					end
+					if canuse == false then
+						return 0
+					else
+						return 1
+					end
+				end
+				if v['Name'] and placecheck() ~= 0 then
 					if typeof(v['Name']) == "string" then
 						checkvalid(v,v['Name'])
 					else
 						for ind = 1, #v['Name'] do
-							checkvalid(v, v['Name'][ind]) --holy fucking nest retard
+							checkvalid(v, v['Name'][ind])
 						end
 					end
 				end
@@ -2019,14 +2165,14 @@ function searchquerymain()
 			elseif  queryslots[3] == nil then
 				queryslots[3] = true
 				slotreserved = 3
-			end --this is slop yes ik
+			end
 			if slotreserved ~= nil then
 				local argtable = v['Args']
 				local warning = nil
 				if v['Warning'] then
 					warning = v['Warning']
 				end
-				createsuggestion(inpname, argtable[1], argtable[2], argtable[3], v['CommandStyle'], slotreserved, warning)
+				createsuggestion(inpname, argtable[1], argtable[2], argtable[3], v['CommandStyle'], slotreserved, warning, v['Places'])
 			else
 				return
 			end
@@ -2035,7 +2181,25 @@ function searchquerymain()
 	cmdinput:GetPropertyChangedSignal('Text'):Connect(function()
 		refreshcanvas()
 		for i,v in pairs(cmds) do
-			if v['Name'] then
+			local function placecheck()
+				local places = v['Places']
+				local canuse = false
+				if places then
+					for _,a in pairs(places) do
+						if tonumber(a) == game.PlaceId then
+							canuse = true
+						end
+					end
+				else
+					return nil
+				end
+				if canuse == false then
+					return 0
+				else
+					return 1
+				end
+			end
+			if v['Name'] and placecheck() ~= 0 then
 				if typeof(v['Name']) == "string" then
 					suggestmain(v, v['Name'])
 				else
@@ -2192,7 +2356,7 @@ function createcmdsui()
 	-- searchglass.Size = UDim2.new(0.26, 0, 1.33, 0)
 	-- searchglass.Image = "rbxassetid://96060641709608"
 	-- searchglass.ScaleType = Enum.ScaleType.Fit
-	local function addcmd(cmdname, paste, cmddescription, cmdargs, warning)
+	local function addcmd(cmdname, paste, cmddescription, cmdargs, warning, placenotif)
 		local cmdinfoframe = Instance.new('Frame', cmdlist)
 		cmdinfoframe.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 		cmdinfoframe.BackgroundTransparency = 0.75
@@ -2213,6 +2377,61 @@ function createcmdsui()
 		argumentsinfo.Position = UDim2.new(0.48, 0, 0.052, 0)
 		argumentsinfo.Size = UDim2.new(0, 122, 0, 15)
 		argumentsinfo.Font = Enum.Font.Nunito
+		if placenotif ~= nil then
+			local usable = false
+			for _,v in pairs(placenotif) do
+				if tonumber(v) == game.PlaceId then
+					usable = true
+				end
+			end
+			if usable == false then
+				local warntxt = 'Only usable in the following games: '
+				for i,v in pairs(placenotif) do
+					local success, info = pcall(MarketplaceService.GetProductInfo, MarketplaceService, tonumber(v))
+					warntxt = warntxt.. tostring(info['Name'])..' - '..tostring(v)
+					if i ~= #placenotif then
+						warntxt = warntxt..', '
+					end
+				end
+				warning = {
+					'game.PlaceId',
+					warntxt
+				}
+			else
+				local placenotifholder = Instance.new('ImageLabel', cmdinfoframe)
+				placenotifholder.BackgroundColor3 = Color3.fromRGB(0,0,0)
+				placenotifholder.BackgroundTransparency = 0.5
+				placenotifholder.Position = UDim2.new(0, 0,0.706, 0)
+				placenotifholder.Size = UDim2.new(0.084, 0,0.286, 0)
+				placenotifholder.Image = "http://www.roblox.com/asset/?id=6727312009"
+				placenotifholder.ImageColor3 = Color3.fromRGB(255,255,255)
+				placenotifholder.ScaleType = Enum.ScaleType.Fit
+				Instance.new('UICorner', placenotifholder).CornerRadius = UDim.new(0,2)
+				local placestroke = Instance.new('UIStroke', placenotifholder)
+				placestroke.Color = Color3.fromRGB(0,0,0)
+				placestroke.Thickness = 2.25
+				placestroke.Transparency = 0.75
+				local placebox = Instance.new('Frame',placenotifholder)
+				placebox.BackgroundTransparency = 1
+				placebox.Size = UDim2.new(1,0,1,0)
+				local placeboxstroke = Instance.new('UIStroke', placebox)
+				Instance.new('UICorner', placebox).CornerRadius = UDim.new(0,2)
+				placeboxstroke.Color = Color3.fromRGB(255, 255, 255)
+				placeboxstroke.Thickness = 1.5
+				placeboxstroke.Transparency = 0.75
+				local place = createplacewindow(warnings)
+				place.Name = "CommandPlaceNotifier"
+				placebox.MouseEnter:Connect(function()
+					place.Visible = true
+				end)
+				placebox.MouseLeave:Connect(function()
+					place.Visible = false
+				end)
+				frameholder.Destroying:Connect(function()
+					place:Destroy()
+				end)
+			end
+		end
 		if warning ~= nil then
 			local warningissue = warning[2]
 			local warningpath = warning[1]
@@ -2317,7 +2536,7 @@ function createcmdsui()
 					vname = vname..tostring(v['Name'][ind])..endstr
 				end
 			end
-			addcmd(vname, paste, v['Description'], v['Args'], v['Warning'])
+			addcmd(vname, paste, v['Description'], v['Args'], v['Warning'], v['Places'])
 		end
 	end
 end
