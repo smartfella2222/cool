@@ -24,7 +24,8 @@ cmds[testcmd] = { --Make sure the insides of "cmds" is the command function
   ['CommandStyle'] = 2, --Icon for the script, 1 = GUI, 2 = Script, 3 = Break script; e.g. unfly
   ['Description'] = 'This is a cool test command!',
   ['Args'] = {}, --MORE ON ARGUMENTS BELOW IF YOU NEED INSIGHT ON THEM
-  ['Command'] = testcmd --Make sure this is the command function!
+  ['Command'] = testcmd, --Make sure this is the command function!
+  ['Places'] = {} --Limits the command to certain PlaceIDs, do not include in the dictionary if unused!
 }
 ```
 
