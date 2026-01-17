@@ -659,6 +659,13 @@ function flingkill(inpplr, attemptdur)
 				foundplr = v
 			end
 		end
+        if foundplr == nil then
+            for i,v in pairs(Players:GetChildren()) do
+                if string.match(string.lower(v.DisplayName), string.lower(inpplr)) then
+                    foundplr = v
+                end
+            end
+        end
 		if foundplr ~= nil then
 			local rancf = player.Character.HumanoidRootPart.CFrame
 			local tkilled = false
@@ -711,7 +718,7 @@ function flingkill(inpplr, attemptdur)
 				admin_notify('Complete', "Command completed, if they arn't flung then there might be no collision or the command just bugged.", 4.5)
 			end)()
 		else
-			admin_notify('Error', "Couldn't find a player matching that name, did you type in a display name instead of username?", 5)
+			admin_notify('Error', "Couldn't find a player matching that name.", 5)
 		end
 	end)
 	if f then
