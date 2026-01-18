@@ -5,6 +5,8 @@ this is my open source admin, change all you need! :)
 
 *I'll update this sometimes, and maybe add some more customization via the admin and source*
 
+I'm very much not big on exploiting as I once was, so I very rarely add stuff!
+
 **loadstring**
 ``` lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/smartfella2222/cool/refs/heads/main/main'))()
