@@ -57,8 +57,7 @@ so a complete argument command would look something like this:
 
 ```lua
 function testcmd(arg, arg2) -- two args for the command
-  print(arg)
-  print(arg2)
+  print(arg, arg2)
 end
 cmds[testcmd] = {
   ['Name'] = "testcmd",
