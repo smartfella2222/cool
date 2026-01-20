@@ -779,6 +779,50 @@ cmds[reset] = {
 	['Command'] = reset
 }
 
+
+
+--
+
+function explode()
+	local s,f = pcall(function()
+		local hrp = player.Character.HumanoidRootPart
+		task.spawn(function()
+			hrp.Anchored = true
+			if player.Character:FindFirstChild('Animate') then
+				player.Character.Animate:Destroy()
+			end
+			local function fetchvel(pos)
+				return CFrame.lookAt(pos,hrp.Position):Inverse().LookVector
+			end
+			local function ran()
+				return Vector3.new(math.random(-350,350),math.random(-350,350),math.random(-350,350))
+			end
+			
+			repeat
+				for _,v in pairs(player.Character:GetChildren()) do
+					if v:IsA('BasePart') then
+						v.AssemblyLinearVelocity = fetchvel(v.Position)*math.random(-350,350) + ran()
+					end
+				end
+				task.wait()
+			until player.Character.Humanoid.Health <= 0
+		end)
+		task.wait(0.3)
+		player.Character.Humanoid:ChangeState(15)
+	end)
+	if f then
+		admin_notify('Error', tostring(f), 5)
+	end
+end
+cmds[explode] = {
+	['Name'] = "explode",
+	['CommandStyle'] = 2,
+	['Description'] = 'Kaboom. (Kills and flings your body parts)',
+	['Args'] = {
+	},
+	['Command'] = explode
+}
+
 --
 
 function diedsignal()
@@ -1429,116 +1473,116 @@ cmds[walkfling] = {
 	['Command'] = walkfling
 }
 
-if player.Character ~= nil and player.Character:FindFirstChild('Humanoid') then
-	if player.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
-		cmds[reangle]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
-		cmds[monstermash]['Warning'] = {player.Character.Humanoid:GetFullName(), 'This command does not support an R15 Rig type.'}
+if player.Character ~= nil and player.Character:FindFirstChildWhichIsA('Humanoid') then
+	if player.Character:FindFirstChildWhichIsA('Humanoid').RigType == Enum.HumanoidRigType.R15 then
+		cmds[reangle]['Warning'] = {player.Character:FindFirstChildWhichIsA('Humanoid'):GetFullName(), 'This command does not support an R15 Rig type.'}
+		cmds[monstermash]['Warning'] = {player.Character:FindFirstChildWhichIsA('Humanoid'):GetFullName(), 'This command does not support an R15 Rig type.'}
 	end
 end
 
-function goofyanim(stepbase)
-	local rig = player.Character
-	if characterrig == nil then
-		admin_notify('Error', 'The command "angleanim" must be ran first to use this!', 3.5)
-		return
-	end
-	local neck = rig:FindFirstChild('Neck', true)
-	local rshoulder = rig:FindFirstChild('Right Shoulder', true)
-	local lshoulder = rig:FindFirstChild('Left Shoulder', true)
-	local rhip = rig:FindFirstChild('Right Hip', true)
-	local lhip = rig:FindFirstChild('Left Hip', true)
-	local rootjoint = rig:FindFirstChild('RootJoint', true)
+-- function goofyanim(stepbase)
+-- 	local rig = player.Character
+-- 	if characterrig == nil then
+-- 		admin_notify('Error', 'The command "angleanim" must be ran first to use this!', 3.5)
+-- 		return
+-- 	end
+-- 	local neck = rig:FindFirstChild('Neck', true)
+-- 	local rshoulder = rig:FindFirstChild('Right Shoulder', true)
+-- 	local lshoulder = rig:FindFirstChild('Left Shoulder', true)
+-- 	local rhip = rig:FindFirstChild('Right Hip', true)
+-- 	local lhip = rig:FindFirstChild('Left Hip', true)
+-- 	local rootjoint = rig:FindFirstChild('RootJoint', true)
 
-	local playing_anims = {
-		['Idle'] = true,
-		['Running'] = false,
-		['Falling'] = false
-	}
+-- 	local playing_anims = {
+-- 		['Idle'] = true,
+-- 		['Running'] = false,
+-- 		['Falling'] = false
+-- 	}
 
-	rig:FindFirstChild('Humanoid').WalkSpeed = 45
-	rig:FindFirstChild('Humanoid').JumpPower = 75
+-- 	rig:FindFirstChild('Humanoid').WalkSpeed = 45
+-- 	rig:FindFirstChild('Humanoid').JumpPower = 75
 
-	local rjorgin = rootjoint.C0
+-- 	local rjorgin = rootjoint.C0
 
-	local step_based_wait = false
-	if stepbase ~= "true" then
-		step_based_wait = false
-	else
-		step_based_wait = true
-	end
+-- 	local step_based_wait = false
+-- 	if stepbase ~= "true" then
+-- 		step_based_wait = false
+-- 	else
+-- 		step_based_wait = true
+-- 	end
 
-	local function waityield()
-		if step_based_wait ~= true then
-			return wait()
-		else
-			return task.wait()
-		end
-	end
-	coroutine.wrap(function()
-		while waityield() do
-			local s,f = pcall(function()
-				if rig:FindFirstChild('Humanoid') then
-					if rig:FindFirstChild('Humanoid').MoveDirection ~= Vector3.new(0,0,0) then
-						playing_anims['Idle'] = false
-						playing_anims['Running'] = true
-					else
-						playing_anims['Idle'] = true
-						playing_anims['Running'] = false
-					end
-					if rig:FindFirstChild('Humanoid').FloorMaterial == Enum.Material.Air then
-						playing_anims['Falling'] = true
-					else
-						playing_anims['Falling'] = false
-					end
-				end
-				local idleanim = playing_anims['Idle']
-				if playing_anims['Falling'] == false then
-					if idleanim == true then
-						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
-							0,-math.sin(tick() * 4)/2.25,1*math.sin(tick() * 8)/5 - 0.2) * CFrame.Angles(math.rad(15*math.sin(tick() * 4)),
-								1*math.sin(tick() * 2)/25,0),
-							0.5
-						)
-						rhip.CurrentAngle = math.rad(10*math.sin(tick() * 4)) * 1.75
-						lhip.CurrentAngle = -math.rad(10*math.sin(tick() * 4)) * 1.75
-						rshoulder.CurrentAngle = math.rad(15*math.sin(tick() * 4 - 2)) * 2.25
-						lshoulder.CurrentAngle = -math.rad(15*math.sin(tick() * 4 - 3)) * 2.25
-						neck.CurrentAngle = -math.rad(15*math.sin(tick() * 2))
-					elseif playing_anims['Running'] == true then
-						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
-							0,0,1*math.sin(tick() * 32)/1.25 + 0.25) * CFrame.Angles(math.rad(20*math.sin(tick() * 32)-45),
-								1*math.sin(tick() * 8)/5,0),
-							0.5
-						)
-						rhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
-						lhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
-						rshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 + 2)+10)
-						lshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 - 4)-10)
-						neck.CurrentAngle = -math.rad(20*math.sin(tick() * 16))
-					end
-				else
-					rootjoint.C0 = rootjoint.C0:Lerp(rootjoint.C0 * CFrame.Angles(
-						math.rad(25),
-						0,0),
-						0.5
-					)
-				end
-			end)
-			if f then
-				break
-			end
-		end
-	end)()
-end
-cmds[goofyanim] = {
-	['Name'] = "goofyanim",
-	['CommandStyle'] = 2,
-	['Description'] = "Gives ya goofy animations, angleanim is required to be ran first! (the bool determines if task.wait is used for the animation loop)",
-	['Args'] = {
-		'bool'
-	},
-	['Command'] = goofyanim
-}
+-- 	local function waityield()
+-- 		if step_based_wait ~= true then
+-- 			return wait()
+-- 		else
+-- 			return task.wait()
+-- 		end
+-- 	end
+-- 	coroutine.wrap(function()
+-- 		while waityield() do
+-- 			local s,f = pcall(function()
+-- 				if rig:FindFirstChild('Humanoid') then
+-- 					if rig:FindFirstChild('Humanoid').MoveDirection ~= Vector3.new(0,0,0) then
+-- 						playing_anims['Idle'] = false
+-- 						playing_anims['Running'] = true
+-- 					else
+-- 						playing_anims['Idle'] = true
+-- 						playing_anims['Running'] = false
+-- 					end
+-- 					if rig:FindFirstChild('Humanoid').FloorMaterial == Enum.Material.Air then
+-- 						playing_anims['Falling'] = true
+-- 					else
+-- 						playing_anims['Falling'] = false
+-- 					end
+-- 				end
+-- 				local idleanim = playing_anims['Idle']
+-- 				if playing_anims['Falling'] == false then
+-- 					if idleanim == true then
+-- 						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
+-- 							0,-math.sin(tick() * 4)/2.25,1*math.sin(tick() * 8)/5 - 0.2) * CFrame.Angles(math.rad(15*math.sin(tick() * 4)),
+-- 								1*math.sin(tick() * 2)/25,0),
+-- 							0.5
+-- 						)
+-- 						rhip.CurrentAngle = math.rad(10*math.sin(tick() * 4)) * 1.75
+-- 						lhip.CurrentAngle = -math.rad(10*math.sin(tick() * 4)) * 1.75
+-- 						rshoulder.CurrentAngle = math.rad(15*math.sin(tick() * 4 - 2)) * 2.25
+-- 						lshoulder.CurrentAngle = -math.rad(15*math.sin(tick() * 4 - 3)) * 2.25
+-- 						neck.CurrentAngle = -math.rad(15*math.sin(tick() * 2))
+-- 					elseif playing_anims['Running'] == true then
+-- 						rootjoint.C0 = rootjoint.C0:Lerp(rjorgin * CFrame.new(
+-- 							0,0,1*math.sin(tick() * 32)/1.25 + 0.25) * CFrame.Angles(math.rad(20*math.sin(tick() * 32)-45),
+-- 								1*math.sin(tick() * 8)/5,0),
+-- 							0.5
+-- 						)
+-- 						rhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
+-- 						lhip.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16))
+-- 						rshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 + 2)+10)
+-- 						lshoulder.CurrentAngle = -3.5*math.rad(25*math.sin(tick() * 16 - 4)-10)
+-- 						neck.CurrentAngle = -math.rad(20*math.sin(tick() * 16))
+-- 					end
+-- 				else
+-- 					rootjoint.C0 = rootjoint.C0:Lerp(rootjoint.C0 * CFrame.Angles(
+-- 						math.rad(25),
+-- 						0,0),
+-- 						0.5
+-- 					)
+-- 				end
+-- 			end)
+-- 			if f then
+-- 				break
+-- 			end
+-- 		end
+-- 	end)()
+-- end
+-- cmds[goofyanim] = {
+-- 	['Name'] = "goofyanim",
+-- 	['CommandStyle'] = 2,
+-- 	['Description'] = "Gives ya goofy animations, angleanim is required to be ran first! (the bool determines if task.wait is used for the animation loop)",
+-- 	['Args'] = {
+-- 		'bool'
+-- 	},
+-- 	['Command'] = goofyanim
+-- }
 
 
 --
